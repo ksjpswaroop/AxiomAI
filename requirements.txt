@@ -2,7 +2,7 @@
 
 ## Core Reasoning
 kanren>=0.2.3           # Logic programming / unification
-unification>=0.4.2     # Term unification
+unification>=0.3.1     # Term unification
 
 ## Constraint Solving
 z3-solver>=4.12.0       # Theorem proving / CSP
