@@ -23,8 +23,6 @@ classifiers = [
 requires-python = ">=3.11"
 
 dependencies = [
-    "kanren>=0.2.3",
-    "unification>=0.4.2",
     "z3-solver>=4.12.0",
     "networkx>=3.2.0",
     "pydantic>=2.5.0",

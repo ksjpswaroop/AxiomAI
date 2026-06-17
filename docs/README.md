@@ -91,7 +91,7 @@ axiomai solve-sudoku
 ## REST API
 
 ```bash
-uvicorn axiomai.src.reasoner.api.main:app --reload --port 8000
+uvicorn axiomai.reasoner.api.main:app --reload --port 8000
 
 # Examples:
 curl -X POST http://localhost:8000/facts \

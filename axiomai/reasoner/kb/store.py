@@ -44,9 +44,8 @@ class KnowledgeBase:
     def add_fact(self, fact: Fact) -> Fact:
         """Add a fact. Idempotent — same predicate replaces existing."""
         self._stats["adds"] += 1
-        self._facts[fact.predicate.relation + "(" + ",".join(
-            str(t) for t in fact.predicate.terms
-        ) + ")"] = fact
+        key = str(fact.predicate)
+        self._facts[key] = fact
         return fact
 
     def retract_fact(self, predicate_str: str) -> bool:
