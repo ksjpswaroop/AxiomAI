@@ -1,7 +1,8 @@
 # AxiomAI — Implementation Tracker
 
-**Version:** 1.0  
+**Version:** 1.1  
 **Date:** 2026-06-17  
+**Last Updated:** 2026-06-17 (P0 complete, PR #4 open)  
 **Companion doc:** [PROJECT-MODULES.md](./PROJECT-MODULES.md)
 
 Use this document as the single source of truth for build progress. Update checkboxes as work completes.
@@ -26,15 +27,19 @@ Use this document as the single source of truth for build progress. Update check
 
 | Phase | Name | Progress | Blocker |
 |-------|------|----------|---------|
-| P0 | Foundation Fixes | 8/8 | None |
-| P1 | Core Engine Completion | 0/14 | Depends on P0 |
-| P2 | Platform Layer | 0/12 | Depends on P1 |
+| P0 | Foundation Fixes | 8/8 ✅ | None |
+| P1 | Core Engine Completion | 1/14 | None — ready to start |
+| P2 | Platform Layer | 0/12 | None — can parallelize with P1 |
 | P3 | Application Framework | 0/10 | Depends on P2 |
 | P4 | Tier 1 Case Studies | 0/3 verticals | Depends on P3 |
 | P5 | Working Application | 0/8 | Depends on P4 |
 | P6 | Tier 2–5 Case Studies | 0/15 verticals | Depends on P5 |
 
-**Overall:** P0 complete. Core engine ~90% alpha. Platform tests/CI not started. Application/case-study code not started.
+**Overall:** P0 complete. Core engine ~90% alpha. Install + CLI verified. Tests/CI not started. Application/case-study code not started.
+
+**Active branch:** `cursor/project-modules-tracker-ef4a` · **PR:** [#4](https://github.com/ksjpswaroop/AxiomAI/pull/4) (docs + P0 fixes, conflicts resolved)
+
+**Recommended next:** P2-01–P2-03 (test suite) in parallel with P1-01–P1-04 (resolution engine)
 
 ---
 
@@ -54,7 +59,15 @@ Use this document as the single source of truth for build progress. Update check
 | P0-07 | Add `LICENSE` file (MIT) | Legal | [x] | Matches `pyproject.toml` declaration |
 | P0-08 | Verify `pip install -e .` + smoke test | All | [x] | Socrates demo proves `Mortal(Socrates)` |
 
-**P0 Exit Criteria:** `axiomai socrates` and `python examples/socrates.py` both succeed.
+**P0 Exit Criteria:** `axiomai socrates` and `python examples/socrates.py` both succeed. ✅ Met.
+
+### P0 Additional Fixes (discovered during smoke test)
+
+| ID | Task | Module | Status | Notes |
+|----|------|--------|--------|-------|
+| P0-09 | Backward chaining checks KB facts in recursive `_prove_goal` | M6a | [x] | Socrates was returning UNKNOWN |
+| P0-10 | Normalize KB fact keys via `str(predicate)` | M5 | [x] | Fixes multi-arg lookup mismatch |
+| P0-11 | Set proof tree `result`/`conclusion` on successful proofs | M7 | [x] | CLI proof footer showed UNKNOWN |
 
 ---
 
@@ -310,9 +323,9 @@ CS{NN}-06  Register in /case-studies API + web console launcher
 ## Milestone Map
 
 ```
-M0: P0 complete ────────────► Project runs (axiomai socrates works)
+M0: P0 complete ✅ ──────────► Project runs (axiomai socrates works)
          │
-M1: P1 + P2 complete ───────► Engine production-ready (tests + CI)
+M1: P1 + P2 complete ───────► Engine production-ready (tests + CI)  ← CURRENT TARGET
          │
 M2: P3 complete ────────────► Governance framework demo works
          │
@@ -345,14 +358,15 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 ## Risk Register
 
-| Risk | Impact | Mitigation | Owner Phase |
-|------|--------|------------|-------------|
-| Import path bugs block all development | High | P0 first, before any feature work | P0 |
-| Resolution engine too complex for MVP | Medium | Ship with backward chaining; resolution as beta | P1 |
-| Case studies scope creep | High | Strict 6-task template per vertical | P4–P6 |
-| Connector integrations need real credentials | Medium | Mock connectors with synthetic data first | P3 |
-| No frontend expertise | Medium | Streamlit MVP before React | P5 |
-| Determinism regressions | High | `test_determinism.py` in CI | P2 |
+| Risk | Impact | Status | Mitigation |
+|------|--------|--------|------------|
+| Import path bugs block all development | High | ✅ Resolved | P0 complete (PR #4) |
+| Invalid PyPI deps block install | High | ✅ Resolved | Removed `unification>=0.4.2`, `kanren` |
+| Resolution engine too complex for MVP | Medium | Open | Ship with backward chaining; resolution as beta |
+| Case studies scope creep | High | Open | Strict 6-task template per vertical |
+| Connector integrations need real credentials | Medium | Open | Mock connectors with synthetic data first |
+| No frontend expertise | Medium | Open | Streamlit MVP before React |
+| Determinism regressions | High | Open | `test_determinism.py` in CI (P2-08) |
 
 ---
 
@@ -360,8 +374,10 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 | Date | Phase | Update |
 |------|-------|--------|
-| 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining fact lookup |
-| 2026-06-17 | — | Tracker created. Engine ~85% alpha. 18 case study specs exist. Application layer not started. |
+| 2026-06-17 | P0 | PR #4: merge conflict with master resolved (`IMPLEMENTATION-TRACKER.md`) |
+| 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining, KB keys |
+| 2026-06-17 | — | PR #3 merged to master: module docs + tracker (docs only) |
+| 2026-06-17 | — | Tracker v1.0 created. Engine ~85% alpha. 18 case study specs exist. |
 
 ---
 
@@ -369,16 +385,26 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 ### Implemented (verified after P0)
 
+- `pip install -e ".[dev]"` succeeds
+- `from axiomai import Reasoner` — no import errors
+- `axiomai socrates` → PROVED: `Mortal(Socrates)`
 - Predicate/Fact/Rule models and parser
 - Backward and forward chaining with proof trees
 - Z3 constraint solver + Sudoku
 - STRIPS planner
 - Causal graph engine
-- In-memory KB with contradiction detection
+- In-memory KB with contradiction detection + normalized fact keys
 - FastAPI REST server (all endpoints)
-- Typer CLI commands
+- Typer CLI with `main()` entry point
 - Explanation narrator (4 styles)
 - `examples/socrates.py` (5 demos)
+- Root `README.md`, `LICENSE`, corrected doc paths
+
+### Partially Implemented
+
+- Resolution engine (stub `_resolve_pair`, no full CNF)
+- LLM extractor module (not wired to `Reasoner` facade)
+- KB namespace / versioning / temporal validity
 
 ### Not Implemented
 

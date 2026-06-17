@@ -13,8 +13,8 @@ AxiomAI is a **deterministic reasoning engine** positioned as the trust layer fo
 
 | Layer | Purpose | Status |
 |-------|---------|--------|
-| **L0 — Core Engine** | Logic, inference, proofs, KB | ~85% implemented (alpha) |
-| **L1 — Platform** | CLI, REST API, persistence, tests | ~60% implemented |
+| **L0 — Core Engine** | Logic, inference, proofs, KB | ~90% implemented (alpha, P0 verified) |
+| **L1 — Platform** | CLI, REST API, persistence, tests | ~65% implemented (CLI/API done; tests/CI pending) |
 | **L2 — Application Framework** | Agent governance, connectors, UI shell | Not started |
 | **L3 — Vertical Case Studies** | 18 domain-specific products | Specs only (0% code) |
 
@@ -71,15 +71,15 @@ User / Agent Query ────────────────────�
 | M0 | Package & Public API | L0 | `axiomai/` | ✅ Done |
 | M1 | Core Models | L0 | `axiomai/reasoner/core/models.py` | ✅ Done |
 | M2 | Parser | L0 | `axiomai/reasoner/core/parser.py` | ✅ Done |
-| M3 | Unification & Substitution | L0 | `axiomai/reasoner/core/` | ⚠️ Broken imports |
+| M3 | Unification & Substitution | L0 | `axiomai/reasoner/core/` | ✅ Done |
 | M4 | Deterministic Ordering | L0 | `axiomai/reasoner/core/ordering.py` | ✅ Done |
 | M5 | Knowledge Base | L0 | `axiomai/reasoner/kb/store.py` | ✅ In-memory only |
 | M6 | Inference Engines | L0 | `axiomai/reasoner/engines/` | ⚠️ Resolution partial |
 | M7 | Explanation Engine | L0 | `axiomai/reasoner/explain/` | ✅ Done |
 | M8 | Integrations (Z3, LLM) | L0 | `axiomai/reasoner/integrations/` | ⚠️ LLM not wired |
-| M9 | Reasoner Facade | L0 | `axiomai/reasoner/engine.py` | ⚠️ Broken imports |
+| M9 | Reasoner Facade | L0 | `axiomai/reasoner/engine.py` | ✅ Done |
 | M10 | REST API | L1 | `axiomai/reasoner/api/main.py` | ✅ Done |
-| M11 | CLI | L1 | `axiomai/reasoner/cli.py` | ⚠️ Missing `main()` |
+| M11 | CLI | L1 | `axiomai/reasoner/cli.py` | ✅ Done |
 | M12 | Persistence | L1 | — | ❌ Not started |
 | M13 | Test Suite | L1 | `tests/` | ❌ Not started |
 | M14 | Examples | L1 | `examples/` | ✅ 1 script |
@@ -171,9 +171,9 @@ result = r.ask("Mortal(Socrates)")
 3. Occurs check to prevent infinite structures
 4. Compose substitutions for multi-goal proofs
 
-**Known issues:**
-- Imports reference stale path `axiomai.src.reasoner.core.*` — must be `axiomai.reasoner.core.*`
-- `engine.py` and `cli.py` use `from ..core` (parent of `reasoner` is `axiomai`, not `reasoner`)
+**Known issues (resolved in P0):**
+- ~~Imports reference stale path `axiomai.src.reasoner.core.*`~~ — fixed
+- ~~`engine.py` and `cli.py` use wrong `..` relative imports~~ — fixed
 
 **Acceptance criteria:**
 - [x] Basic unification
@@ -382,7 +382,7 @@ result = r.ask("Mortal(Socrates)")
 | `/reset`, `/load/socrates` | POST | M9 |
 | `/stats`, `/health` | GET | — |
 
-**Known doc bug:** README references `axiomai.src.reasoner.api.main:app` — correct path is `axiomai.reasoner.api.main:app`.
+**Known doc bug (fixed):** README previously referenced `axiomai.src.reasoner.api.main:app` — correct path is `axiomai.reasoner.api.main:app`.
 
 ---
 
