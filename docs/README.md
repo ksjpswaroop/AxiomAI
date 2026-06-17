@@ -1,66 +1,133 @@
-# AxiomAI
+# AxiomAI Reasoner
 
 **Deterministic Reasoning Engine — Facts + Rules = Proven Answers**
 
-AxiomAI is an open-source reasoning engine that gives the same answer every time for the same facts, rules, and query. It is the anti-guessing AI: every conclusion is provable, every step is traceable.
+A deterministic reasoning engine that gives the same answer every time for the same facts, rules, and query. Every conclusion is provable, every step is traceable.
+
+## Key Principle
+
+> **LLM translates. Reasoning engine proves.**
+> Use LLMs for: Natural language → facts/rules/query
+> Use AxiomAI for: facts + rules → guaranteed reasoning
+
+## Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│                     AxiomAI Reasoner                       │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  Natural Language ──→ │ LLM Extractor │ ──→ Knowledge   │
+│                        │               │        Base     │
+│                        └───────────────┘                 │
+│                                 │                        │
+│  ┌──────────────────────────────▼──────────────────────┐  │
+│  │              Inference Engines                       │  │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐  │  │
+│  │  │  Forward     │  │  Backward    │  │ Resolution│  │  │
+│  │  │  Chaining    │  │  Chaining    │  │ (Z3)     │  │  │
+│  │  └──────────────┘  └──────────────┘  └───────────┘  │  │
+│  │  ┌──────────────┐  ┌──────────────┐  ┌───────────┐  │  │
+│  │  │  Constraint  │  │  Planning    │  │  Causal   │  │  │
+│  │  │  Solver (Z3) │  │  (STRIPS)   │  │  Engine   │  │  │
+│  │  └──────────────┘  └──────────────┘  └───────────┘  │  │
+│  └──────────────────────────────┬──────────────────────┘  │
+│                                 │                         │
+│                    ┌────────────▼────────────┐             │
+│                    │    Proof + Explanation  │             │
+│                    │    Engine              │             │
+│                    └────────────────────────┘             │
+│                                                          │
+└──────────────────────────────────────────────────────────┘
+```
+
+## Reasoning Modes
+
+| Mode | Description |
+|------|-------------|
+| **Backward Chaining** | Goal-driven Prolog-style proving |
+| **Forward Chaining** | Data-driven, derives all possible facts |
+| **Resolution** | Theorem proving via refutation (Z3) |
+| **Constraint Solving** | CSP — Sudoku, scheduling, resource allocation |
+| **Planning** | STRIPS-style classical planning |
+| **Causal Reasoning** | Causal graphs, root cause, counterfactuals |
+
+## Answer Types
+
+```
+PROVED      — logically derived from facts + rules
+DISPROVED   — proven not to follow from KB
+UNKNOWN     — cannot be determined from current KB
+INCONSISTENT — KB contains contradictions
+```
 
 ## Quick Start
 
-```bash
-pip install axiomai
+```python
+from axiomai import Reasoner
+
+r = Reasoner()
+r.add_fact("Human(Socrates)")
+r.add_rule("IF Human(x) THEN Mortal(x)")
+
+result = r.ask("Mortal(Socrates)")
+print(result.result)          # PROVED
+print(result.explain())       # ✅ Yes — because Human(Socrates) ...
 ```
 
-```python
-from axiomai import AxiomEngine
+## CLI
 
-engine = AxiomEngine()
-engine.add_fact("Human(Socrates)")
-engine.add_rule("IF Human(x) THEN Mortal(x)")
+```bash
+pip install -e .
+axiomai add-fact "Human(Socrates)"
+axiomai add-rule "IF Human(x) THEN Mortal(x)"
+axiomai ask "Mortal(Socrates)"
+axiomai prove "Mortal(Socrates)"
+axiomai contradictions
+axiomai socrates
+axiomai solve-sudoku
+```
 
-result = engine.query("Mortal(Socrates)")
-print(result.proof_trace.to_text())
-# ✅ TRUE — with full proof trace
+## REST API
+
+```bash
+uvicorn axiomai.src.reasoner.api.main:app --reload --port 8000
+
+# Examples:
+curl -X POST http://localhost:8000/facts \
+  -d '{"predicate": "Human(Socrates)"}'
+
+curl -X POST http://localhost:8000/query \
+  -d '{"query": "Mortal(Socrates)"}'
 ```
 
 ## Features
 
 - **Forward Chaining** — Data-driven inference from facts
 - **Backward Chaining** — Goal-driven Prolog-style proving
-- **Unification** — First-order variable binding
-- **Constraint Solving** — Z3-backed CSP (Sudoku, scheduling)
+- **Unification** — First-order variable binding with occurs check
+- **Resolution** — Z3-backed theorem proving
+- **Constraint Solving** — Z3 CSP (Sudoku, scheduling)
+- **Planning** — STRIPS BFS planner
+- **Causal Reasoning** — NetworkX causal graphs
 - **Proof Traces** — Human-readable step-by-step explanations
 - **Contradiction Detection** — Truth maintenance
+- **LLM Integration** — Extract facts/rules from NL (optional)
 
-## Architecture
+## Project Structure
 
 ```
-Facts → Knowledge Base → Rules → Inference Engine → Proof Trace → Answer
-```
-
-## Install
-
-```bash
-pip install -e .
-```
-
-## Run Examples
-
-```bash
-python examples/socrates.py
-python examples/medical_diagnosis.py
-python examples/scheduling.py
-```
-
-## Run API Server
-
-```bash
-uvicorn axiomai.api:app --reload --port 8000
-```
-
-## Run Tests
-
-```bash
-pytest tests/ -v
+axiomai/
+├── src/reasoner/
+│   ├── core/           # Models, unification, parser, substitution
+│   ├── engines/        # Forward, backward, resolution, constraints, planner
+│   ├── kb/             # Knowledge base store
+│   ├── explain/        # Proof trees, narrators
+│   ├── integrations/    # Z3 adapter, LLM extractor
+│   └── api/            # FastAPI routes
+├── tests/
+├── docs/
+└── examples/
 ```
 
 ## License

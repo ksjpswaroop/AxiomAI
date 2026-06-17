@@ -1,266 +1,378 @@
 # AxiomAI — Product Requirements Document
 
-## 1. Concept & Vision
-
-AxiomAI is an **open-source deterministic reasoning engine** — a Python library and REST API that gives the same answer every time for the same facts, rules, and query. It is the anti-guessing AI: every conclusion is provable, every step is traceable, and every answer is reproducible.
-
-The personality is: **mathematically rigorous, transparently honest, developer-first**. It doesn't try to sound smart — it shows its work.
-
-**Tagline:** *"Facts + Rules = Proven Answers"*
+**Version:** 0.2.0
+**Status:** Alpha
+**Last Updated:** 2026-06-17
 
 ---
 
-## 2. Design Language
+## 1. Vision
 
-### Aesthetic Direction
-Inspired by formal logic systems (Prolog, Coq, Isabelle) — clean, sparse, academic. White space is correctness. Monospace fonts are truth.
+A deterministic reasoning engine that gives the same answer every time for the same facts, rules, and query. Every conclusion is provable, every step is traceable, and every contradiction is caught. AxiomAI is the "trust layer" for AI systems — it verifies what LLMs claim, flags hallucinations, and enforces business rules with mathematical certainty.
 
-### Color Palette
-- **Primary:** `#1a1a2e` (deep navy — authority)
-- **Secondary:** `#16213e` (dark blue — precision)
-- **Accent:** `#e94560` (red — contradiction/alert)
-- **Success:** `#0f9b6e` (green — proven truth)
-- **Background:** `#f8f9fa` (off-white — clean slate)
-- **Text:** `#2d3436` (near-black)
-- **Code/Mono:** `#6c5ce7` (purple — logic)
-
-### Typography
-- **Headings:** Inter (weight 700)
-- **Body:** Inter (weight 400)
-- **Code/Logic:** JetBrains Mono
-
-### Visual Assets
-- Minimal iconography — mathematical symbols (∧, ∨, →, ∴)
-- Proof trees rendered as ASCII or SVG
-- No stock photography — diagrams only
+**Core principle:** LLM translates. AxiomAI proves.
 
 ---
 
-## 3. Layout & Structure
+## 2. Problem Statement
 
-### Repository Layout
+LLMs hallucinate. They generate confident but false claims. Current AI systems have no way to verify logical claims against a structured knowledge base. Businesses need deterministic, auditable reasoning for compliance, medical, legal, and financial decisions.
+
+---
+
+## 3. Product Goal
+
+Build a Python reasoning engine that takes:
+- **Facts** (known truths)
+- **Rules** (IF-THEN logic)
+- **Query** (question)
+
+And returns:
+- **Answer** (PROVED / DISPROVED / UNKNOWN / INCONSISTENT)
+- **Proof Trace** (step-by-step explanation)
+- **Contradictions** (what conflicts exist)
+- **Confidence Source** (where facts came from)
+
+---
+
+## 4. Core Features
+
+### 4.1 Knowledge Base
+
+| Feature | Purpose |
+|---------|---------|
+| Fact Store | Atomic facts with provenance, timestamps, validity periods |
+| Rule Store | IF-THEN rules with priority, author, domain, confidence source |
+| Entity Registry | Track objects (Socrates, Patient1, ServerA) |
+| Type System | Classes: Person, Device, Disease |
+| Namespace Support | Separate domains (medical, legal, engineering) |
+| Versioning | Track rule/fact changes over time |
+| Source Tracking | Know where each fact came from |
+| Validity Period | Facts true only during time ranges |
+
+### 4.2 Logic Representation
+
+| Logic Type | Example |
+|------------|---------|
+| Predicate logic | `Human(Socrates)` |
+| Propositional | `A → B` |
+| Conjunction | `A AND B` |
+| Disjunction | `A OR B` |
+| Negation | `NOT A` |
+| Implication | `A → B` |
+| Quantifiers | `forall x`, `exists x` |
+| Equality / Inequality | `x = y`, `x != y` |
+
+### 4.3 Inference Engines
+
+| Engine | Mode | Description |
+|--------|------|-------------|
+| Forward Chaining | Data-driven | Apply all matching rules to facts, generate new facts, repeat to fixpoint |
+| Backward Chaining | Goal-driven | Prove query by recursively proving subgoals (Prolog-style) |
+| Resolution | Theorem proving | CNF conversion + refutation via Z3 |
+| Constraint Solver | CSP | Z3-backed Sudoku, scheduling, resource allocation |
+| Planning | STRIPS | BFS action planner from initial state to goal |
+| Causal | Causal graph | NetworkX causal chains, root cause analysis |
+
+### 4.4 Trust Layer
+
+| Feature | Purpose |
+|---------|---------|
+| Unification | First-order with occurs check, deterministic |
+| Contradiction Detection | Direct, rule-based, type, temporal, constraint |
+| Truth Maintenance | Justifications, dependency graph, retraction |
+| Proof Trace | Human-readable step-by-step explanations |
+| Explanation Narrator | one_line / short / medium / detailed styles |
+| Source Provenance | Every fact tagged with origin |
+| KB Fingerprinting | SHA-256 hash for deterministic verification |
+
+### 4.5 LLM Integration Layer
+
+> **Critical:** LLM translates. Reasoning engine proves.
+
+| LLM Does | LLM Does NOT |
+|----------|--------------|
+| Natural language → facts/rules/query | Final logical proof |
+| Explanation polishing | Contradiction decision |
+| Domain ontology suggestion | Rule firing |
+| Rule extraction from documents | Truth decision |
+
+LLM Extractor uses structured Pydantic output to constrain LLM responses.
+
+---
+
+## 5. Answer Types
+
+```
+PROVED       — logically derived from facts + rules
+DISPROVED    — proven not to follow from KB
+UNKNOWN      — cannot be determined from current KB
+INCONSISTENT — KB contains contradictions
+```
+
+---
+
+## 6. Reasoning Modes
+
+```
+Deterministic Reasoning Engine
+├── Deduction
+├── Forward Chaining
+├── Backward Chaining
+├── Resolution
+├── Unification
+├── Constraint Solving
+├── Rule Priority
+├── Contradiction Detection
+├── Proof Generation
+├── Explanation
+├── Planning (STRIPS/HTN)
+├── Causal Reasoning
+└── Temporal Reasoning
+```
+
+---
+
+## 7. MVP Build Order
+
+### Phase 1: Core Logic Engine
+1. ✅ Predicate model
+2. ✅ Fact model
+3. ✅ Rule model
+4. ✅ Parser
+5. ✅ Unification
+6. ✅ Forward chaining
+7. ✅ Backward chaining
+8. ✅ Proof trace
+
+### Phase 2: Trust Layer
+9. ✅ Contradiction detection
+10. ✅ Source tracking
+11. ✅ Truth maintenance
+12. ✅ Explanation engine
+13. ✅ KB fingerprinting
+
+### Phase 3: Solvers
+14. ✅ Z3 integration
+15. ✅ CSP solver (Sudoku)
+16. ✅ Planning (STRIPS)
+17. ✅ Causal reasoning
+
+### Phase 4: Product Layer
+18. ✅ FastAPI REST
+19. ✅ Typer CLI
+20. ✅ Examples
+21. Tests
+22. LLM extractor (optional)
+
+---
+
+## 8. Stack
+
+```
+Core:       pydantic, lark, kanren, unification, z3-solver, networkx
+API:        fastapi, uvicorn, pydantic
+CLI:        typer, rich
+Storage:    aiosqlite, sqlalchemy
+Testing:    pytest, hypothesis
+LLM:        openai / anthropic (optional)
+```
+
+---
+
+## 9. API Design
+
+### REST Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/facts` | Add a fact |
+| GET | `/facts` | List all facts |
+| DELETE | `/facts` | Retract a fact |
+| POST | `/rules` | Add a rule |
+| GET | `/rules` | List all rules |
+| POST | `/query` | Ask a query (auto mode) |
+| POST | `/reason/forward` | Forward chain |
+| POST | `/reason/backward` | Backward chain |
+| POST | `/reason/resolution` | Resolution proof |
+| POST | `/explain` | Get explanation |
+| GET | `/contradictions` | Check consistency |
+| POST | `/constraints/solve` | Solve CSP |
+| POST | `/constraints/sudoku` | Solve Sudoku |
+| POST | `/plan` | Generate plan |
+| POST | `/causal` | Add causal edge |
+| GET | `/causal/root-causes/{effect}` | Root causes |
+| POST | `/reset` | Clear KB |
+| POST | `/load/socrates` | Load demo |
+| GET | `/stats` | KB + engine stats |
+| GET | `/health` | Health check |
+
+### CLI Commands
+
+```
+axiomai add-fact "Human(Socrates)"
+axiomai add-rule "IF Human(x) THEN Mortal(x)"
+axiomai ask "Mortal(Socrates)"
+axiomai prove "Mortal(Socrates)"
+axiomai explain "Mortal(Socrates)"
+axiomai forward
+axiomai contradictions
+axiomai socrates
+axiomai solve-sudoku
+axiomai reset
+```
+
+---
+
+## 10. Storage Design
+
+### Tables
+- facts
+- rules
+- predicates
+- entities
+- proofs
+- inference_runs
+- contradictions
+- assumptions
+- sources
+- ontology_classes
+- ontology_relations
+- constraints
+- plans
+
+### Storage Options
+- **MVP:** SQLite
+- **Production:** PostgreSQL + Redis
+- **Graph:** NetworkX for in-memory graph operations
+
+---
+
+## 11. Determinism Requirements
+
+To make the engine truly deterministic:
+1. Stable rule ordering (priority field)
+2. Stable fact ordering (deterministic sort)
+3. Rule priority for execution order
+4. Fixed tie-breakers
+5. No random sampling
+6. Immutable inference snapshots
+7. Same inputs = same outputs (verified by fingerprint)
+8. Versioned KB
+9. Hash every reasoning run
+10. Full proof trace always
+
+---
+
+## 12. Best Product Angle
+
+**Trust Layer for LLM / Agent Output**
+
+```
+LLM generates answer
+    ↓
+Reasoner extracts claims
+    ↓
+Claims become facts/rules
+    ↓
+Deterministic engine verifies:
+  - contradiction?
+  - missing premise?
+  - unsupported claim?
+  - rule violation?
+  - compliance issue?
+    ↓
+Output verified answer with proof trace
+```
+
+### Target Markets
+- **Agent Governance Engine** — verify agent decisions
+- **AI Compliance Verifier** — regulatory rule enforcement
+- **Hallucination Detection Layer** — catch LLM errors
+- **Code Reasoning Engine** — logical code verification
+- **Cybersecurity Expert System** — rule-based threat analysis
+- **Business Rule Validator** — policy enforcement
+- **Medical/Legal Decision Support Guardrail** — deterministic recommendations
+
+### MVP for Market
+**LLM claim verifier + deterministic proof trace**
+
+This is commercially stronger than a generic logic engine because it directly addresses the hallucination problem in production AI systems.
+
+---
+
+## 13. Folder Structure
+
 ```
 AxiomAI/
-├── axiomai/              # Core library
+├── axiomai/
 │   ├── __init__.py
-│   ├── engine.py         # Main inference engine
-│   ├── facts.py          # Fact store
-│   ├── rules.py          # Rule store
-│   ├── unification.py    # Unification engine
-│   ├── forward_chain.py  # Forward chaining
-│   ├── backward_chain.py # Backward chaining
-│   ├── resolution.py     # Resolution theorem prover
-│   ├── constraints.py    # Z3-backed CSP
-│   ├── proof_trace.py    # Proof generation
-│   ├── contradiction.py   # Truth maintenance
-│   └── api.py            # FastAPI routes
+│   ├── reasoner/
+│   │   ├── __init__.py
+│   │   ├── engine.py          # Main facade
+│   │   ├── cli.py             # Typer CLI
+│   │   ├── core/
+│   │   │   ├── __init__.py
+│   │   │   ├── models.py      # Predicate, Fact, Rule, Entity, Term
+│   │   │   ├── parser.py      # String → structured objects
+│   │   │   ├── unification.py  # First-order unification
+│   │   │   ├── substitution.py
+│   │   │   └── ordering.py    # Deterministic ordering
+│   │   ├── engines/
+│   │   │   ├── __init__.py
+│   │   │   ├── forward.py    # Forward chaining
+│   │   │   ├── backward.py    # Backward chaining
+│   │   │   ├── resolution.py  # Resolution theorem prover
+│   │   │   ├── constraints.py # Z3 CSP solver
+│   │   │   ├── planner.py    # STRIPS planner
+│   │   │   └── causal.py      # Causal reasoning
+│   │   ├── kb/
+│   │   │   ├── __init__.py
+│   │   │   └── store.py      # Knowledge base + contradictions
+│   │   ├── explain/
+│   │   │   ├── __init__.py
+│   │   │   ├── proof.py      # Proof tree
+│   │   │   └── narrator.py   # Human-readable explanations
+│   │   ├── integrations/
+│   │   │   ├── __init__.py
+│   │   │   ├── z3_adapter.py
+│   │   │   └── llm_extractor.py
+│   │   └── api/
+│   │       ├── __init__.py
+│   │       └── main.py       # FastAPI routes
+│   └── reasoner.egg-info/
 ├── tests/
-│   ├── test_facts.py
-│   ├── test_rules.py
-│   ├── test_unification.py
-│   ├── test_forward_chain.py
-│   ├── test_backward_chain.py
-│   └── test_integration.py
-├── examples/
-│   ├── socrates.py       # Basic example
-│   ├── medical_diagnosis.py
-│   └── scheduling.py     # CSP/Z3
+│   └── test_reasoner.py
 ├── docs/
 │   ├── README.md
-│   ├── API.md
-│   └── LOGIC.md
-├── requirements.txt
+│   └── API.md
+├── examples/
+│   └── socrates.py
 ├── pyproject.toml
-└── LICENSE
+├── requirements.txt
+└── .gitignore
 ```
 
 ---
 
-## 4. Features & Interactions
+## 14. Example Usage
 
-### Core Features
-
-#### 4.1 Fact Store
-- Add facts as predicates: `Human(Socrates)`, `Loves(John, Mary)`
-- List all facts
-- Query if a fact exists
-- Delete retract facts
-- Import/export facts as JSON
-
-#### 4.2 Rule Store
-- Add rules as IF-THEN: `IF Human(x) THEN Mortal(x)`
-- Multiple antecedents: `IF Human(x) AND Rational(x) THEN Person(x)`
-- List, query, delete rules
-- Rule priority ordering
-
-#### 4.3 Forward Chaining Engine
-- Input: initial facts
-- Output: all derivable facts
-- Algorithm: iterate rules, apply modus ponens, add conclusions
-- Stop when no new facts generated
-- Return proof trace for each new fact
-
-#### 4.4 Backward Chaining Engine
-- Input: goal predicate
-- Output: provable/unprovable with trace
-- Algorithm: recursive goal reduction
-- Proves sub-goals recursively
-- Returns `TRUE/FALSE/UNKNOWN` with proof path
-
-#### 4.5 Unification Engine
-- Input: two predicates with variables
-- Output: variable bindings or failure
-- Example: `Parent(x, Mary)` unify with `Parent(John, y)` → `{x: John, y: Mary}`
-
-#### 4.6 Proof Trace Generator
-- Every inference step documented
-- Output format: JSON or plain text
-- Structure: `{step: int, rule: str, facts_matched: [], conclusion: str}`
-- Human-readable tree view
-
-#### 4.7 Contradiction Detector
-- Detect `P(x)` and `¬P(x)` simultaneously
-- Block inference on contradiction
-- Report which facts/rules conflict
-
-#### 4.8 (Phase 2) Constraint Solver
-- Z3-backed CSP interface
-- Sudoku, scheduling, resource allocation
-- Full proof trace for constraint solutions
-
-#### 4.9 (Phase 2) Causal Reasoning
-- NetworkX-backed causal graphs
-- Cause → Effect链条
-- Counterfactual: "what if X had not occurred"
-
----
-
-## 5. Component Inventory
-
-### FactStore
-- `add_fact(predicate)` → success/error
-- `retract_fact(predicate)` → success/error
-- `query_fact(predicate)` → bool
-- `list_facts()` → [predicates]
-- States: empty, populated, conflicting
-
-### RuleStore
-- `add_rule(antecedents, consequent)` → rule_id
-- `retract_rule(rule_id)` → success
-- `list_rules()` → [rules]
-- `get_rules_for_consequent(consequent)` → [rules]
-
-### InferenceEngine
-- `forward_chain()` → {new_facts, proof_trace}
-- `backward_chain(goal)` → {result, proof_trace}
-- `resolve(goal)` → provable/unprovable
-
-### ProofTrace
-- `generate_trace(inference_steps)` → trace_object
-- `to_text(trace)` → human-readable string
-- `to_json(trace)` → serializable format
-
-### API Server (FastAPI)
-- `POST /facts` — add fact
-- `GET /facts` — list facts
-- `DELETE /facts/{id}` — retract
-- `POST /rules` — add rule
-- `GET /rules` — list rules
-- `POST /query` — run query (auto-selects chain direction)
-- `POST /forward` — forward chain from facts
-- `POST /backward` — backward chain to goal
-- `GET /proof/{query_id}` — get proof trace
-- `GET /health` — server health
-
----
-
-## 6. Technical Approach
-
-### Language & Framework
-- **Python 3.11+**
-- **FastAPI** — async REST API
-- **Pydantic v2** — data models
-- **SQLite** — default storage (swap to Postgres for production)
-- **kanren** — logic programming / unification
-- **z3-solver** — constraint satisfaction
-- **NetworkX** — causal graphs
-- **pytest** — testing
-
-### Data Model
-
-**Fact:**
 ```python
-{
-    "id": "uuid",
-    "predicate": "Human(Socrates)",
-    "terms": ["Socrates"],
-    "relation": "Human",
-    "created_at": "2024-01-01T00:00:00Z"
-}
+from axiomai import Reasoner
+
+r = Reasoner()
+r.add_fact("Human(Socrates)")
+r.add_fact("Human(Plato)")
+r.add_rule("IF Human(x) THEN Mortal(x)")
+
+result = r.ask("Mortal(Socrates)")
+print(result.result)   # PROVED
+print(result.explain()) # ✅ Yes — because Human(Socrates) ...
 ```
 
-**Rule:**
-```python
-{
-    "id": "uuid",
-    "antecedents": ["Human(x)"],
-    "consequent": "Mortal(x)",
-    "priority": 1,
-    "created_at": "2024-01-01T00:00:00Z"
-}
 ```
-
-**ProofStep:**
-```python
-{
-    "step": 1,
-    "type": "fact | rule | unify | conclude",
-    "content": "Human(Socrates)",
-    "justification": "Given",
-    "derived_from": []
-}
+CLI:
+axiomai add-fact "Human(Socrates)"
+axiomai add-rule "IF Human(x) THEN Mortal(x)"
+axiomai ask "Mortal(Socrates)"
 ```
-
-### Reasoning Algorithms
-
-**Forward Chaining:**
-1. Load all facts into working memory
-2. For each rule, try to unify antecedents with facts
-3. On match, add consequent to working memory
-4. Repeat until no new facts (fixpoint)
-5. Return all derived facts + trace
-
-**Backward Chaining:**
-1. Receive goal predicate G
-2. Find rules with consequent matching G
-3. For each rule, prove all antecedents recursively
-4. If all antecedents provable → G is TRUE
-5. Track proof tree; if no rule fires → G is FALSE
-
-**Unification:**
-- Use kanren's `unify()` for first-order unification
-- Return most general unifier (MGU)
-
----
-
-## 7. Non-Goals (Out of Scope for MVP)
-
-- LLM integration (translator-only, not reasoner)
-- Natural language query parsing
-- Probabilistic/Bayesian reasoning
-- Learning/induction from data
-- Distributed knowledge base
-- Graphical UI
-
----
-
-## 8. Success Criteria
-
-- [ ] `pip install axiomai` works
-- [ ] Forward chain produces same results every run
-- [ ] Backward chain proves Socrates is mortal correctly
-- [ ] Proof trace is human-readable
-- [ ] API responds < 100ms for 1000 facts/rules
-- [ ] All reasoning modes return deterministic results
-- [ ] Contradiction detection fires on conflict
-- [ ] Z3 CSP solves Sudoku 9x9
