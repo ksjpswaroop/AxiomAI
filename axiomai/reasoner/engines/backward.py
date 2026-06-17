@@ -83,8 +83,9 @@ class BackwardChainEngine:
 
         duration_ms = (time.perf_counter() - start) * 1000
         proof.duration_ms = duration_ms
-
         if result:
+            proof.result = result
+            proof.conclusion = goal_str if result == "PROVED" else result
             self._memo[goal_str] = result
 
         return BackwardChainResult(
@@ -106,6 +107,17 @@ class BackwardChainEngine:
 
         if depth > 100:
             return "UNKNOWN", proof, {}
+
+        # Check if goal is a known fact
+        if self.kb.query_fact(goal_str):
+            self.step_counter += 1
+            proof.add_step(ProofStep(
+                step=self.step_counter,
+                type=StepType.FACT,
+                content=goal_str,
+                justification="Given",
+            ))
+            return "PROVED", proof, {}
 
         # Find applicable rules
         rules = self.kb.get_rules_for_consequent(goal)

@@ -26,7 +26,7 @@ Use this document as the single source of truth for build progress. Update check
 
 | Phase | Name | Progress | Blocker |
 |-------|------|----------|---------|
-| P0 | Foundation Fixes | 0/8 | Import path bugs prevent running |
+| P0 | Foundation Fixes | 8/8 | None |
 | P1 | Core Engine Completion | 0/14 | Depends on P0 |
 | P2 | Platform Layer | 0/12 | Depends on P1 |
 | P3 | Application Framework | 0/10 | Depends on P2 |
@@ -34,7 +34,7 @@ Use this document as the single source of truth for build progress. Update check
 | P5 | Working Application | 0/8 | Depends on P4 |
 | P6 | Tier 2–5 Case Studies | 0/15 verticals | Depends on P5 |
 
-**Overall:** ~40% of P0–P2 engine/platform exists in code; 0% of application/case-study code exists.
+**Overall:** P0 complete. Core engine ~90% alpha. Platform tests/CI not started. Application/case-study code not started.
 
 ---
 
@@ -45,14 +45,14 @@ Use this document as the single source of truth for build progress. Update check
 
 | ID | Task | Module | Status | Acceptance Criteria |
 |----|------|--------|--------|---------------------|
-| P0-01 | Fix `unification.py` imports (`axiomai.src` → `axiomai.reasoner`) | M3 | [ ] | `from axiomai.reasoner.core.unification import UnificationEngine` works |
-| P0-02 | Fix `engine.py` relative imports (`..core` → `.core`) | M9 | [ ] | `from axiomai import Reasoner` works without ImportError |
-| P0-03 | Fix `cli.py` relative imports (`..engine` → `.engine`) | M11 | [ ] | `python -m axiomai.reasoner.cli socrates` runs |
-| P0-04 | Add `main()` function to `cli.py` for entry point | M11 | [ ] | `axiomai socrates` works after `pip install -e .` |
-| P0-05 | Fix stale paths in `docs/README.md` and `docs/API.md` | Docs | [ ] | All docs reference `axiomai.reasoner.*` |
-| P0-06 | Add root `README.md` symlink or copy pointing to `docs/README.md` | Docs | [ ] | GitHub renders project README |
-| P0-07 | Add `LICENSE` file (MIT) | Legal | [ ] | Matches `pyproject.toml` declaration |
-| P0-08 | Verify `pip install -e .` + smoke test | All | [ ] | Socrates demo proves `Mortal(Socrates)` |
+| P0-01 | Fix `unification.py` imports (`axiomai.src` → `axiomai.reasoner`) | M3 | [x] | `from axiomai.reasoner.core.unification import UnificationEngine` works |
+| P0-02 | Fix `engine.py` relative imports (`..core` → `.core`) | M9 | [x] | `from axiomai import Reasoner` works without ImportError |
+| P0-03 | Fix `cli.py` relative imports (`..engine` → `.engine`) | M11 | [x] | `python -m axiomai.reasoner.cli socrates` runs |
+| P0-04 | Add `main()` function to `cli.py` for entry point | M11 | [x] | `axiomai socrates` works after `pip install -e .` |
+| P0-05 | Fix stale paths in `docs/README.md` and `docs/API.md` | Docs | [x] | All docs reference `axiomai.reasoner.*` |
+| P0-06 | Add root `README.md` symlink or copy pointing to `docs/README.md` | Docs | [x] | GitHub renders project README |
+| P0-07 | Add `LICENSE` file (MIT) | Legal | [x] | Matches `pyproject.toml` declaration |
+| P0-08 | Verify `pip install -e .` + smoke test | All | [x] | Socrates demo proves `Mortal(Socrates)` |
 
 **P0 Exit Criteria:** `axiomai socrates` and `python examples/socrates.py` both succeed.
 
@@ -360,6 +360,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 | Date | Phase | Update |
 |------|-------|--------|
+| 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining fact lookup |
 | 2026-06-17 | — | Tracker created. Engine ~85% alpha. 18 case study specs exist. Application layer not started. |
 
 ---

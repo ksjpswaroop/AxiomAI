@@ -78,7 +78,7 @@ plan = r.plan(
 ### Constraint Solving
 
 ```python
-from axiomai.src.reasoner.engines.constraints import solve_sudoku
+from axiomai.reasoner.engines.constraints import solve_sudoku
 solve_sudoku(grid)  # 9x9 list of lists
 ```
 
