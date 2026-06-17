@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "axiomai"
+version = "0.1.0"
+description = "Deterministic reasoning engine — facts + rules = proven answers"
+readme = "docs/README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "AxiomAI Team", email = "team@axiomai.dev"}
+]
+keywords = ["ai", "reasoning", "logic", "expert-system", "neuro-symbolic", "inference"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.11"
+
+dependencies = [
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.5.0",
+    "kanren>=0.2.3",
+    "z3-solver>=4.12.0",
+    "networkx>=3.2.0",
+    "aiosqlite>=0.19.0",
+    "sqlalchemy>=2.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "hypothesis>=6.92.0",
+    "ruff>=0.1.0",
+    "mypy>=1.8.0",
+]
+
+[project.scripts]
+axiomai = "axiomai.api:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["axiomai*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"

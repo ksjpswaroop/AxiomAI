@@ -1,0 +1,39 @@
+# AxiomAI — Deterministic Reasoning Engine
+# Requirements
+
+# Core API & Data
+fastapi>=0.109.0
+uvicorn[standard]>=0.27.0
+pydantic>=2.5.0
+
+# Logic Programming / Unification
+kanren>=0.2.3
+unification>=0.4.2
+
+# Constraint Solving
+z3-solver>=4.12.0
+
+# Knowledge Graphs / Causal Reasoning
+networkx>=3.2.0
+
+# Data Storage
+aiosqlite>=0.19.0
+sqlalchemy>=2.0.0
+
+# Performance
+numba>=0.59.0
+cython>=3.0.0
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+hypothesis>=6.92.0
+
+# Code Quality
+ruff>=0.1.0
+mypy>=1.8.0
+
+# Documentation
+mkdocs>=1.5.0
+mkdocstrings[python]>=0.24.0
