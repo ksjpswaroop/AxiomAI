@@ -7,19 +7,19 @@ from __future__ import annotations
 
 import time
 import hashlib
-from ..core.models import Fact, Rule, Predicate
-from ..core.unification import UnificationEngine
-from ..core.parser import Parser
-from ..kb.store import KnowledgeBase, ContradictionReport
-from ..engines.forward import ForwardChainEngine, ForwardChainResult
-from ..engines.backward import BackwardChainEngine, BackwardChainResult
-from ..engines.resolution import ResolutionEngine, ResolutionResult
-from ..engines.constraints import ConstraintSolver, solve_sudoku
-from ..engines.planner import PlanningEngine, Plan, STRIPSAction
-from ..engines.causal import CausalEngine
-from ..explain.proof import ProofTree
-from ..explain.narrator import Narrator
-from ..integrations.llm_extractor import LLMExtractor
+from .core.models import Fact, Rule, Predicate
+from .core.unification import UnificationEngine
+from .core.parser import Parser
+from .kb.store import KnowledgeBase, ContradictionReport
+from .engines.forward import ForwardChainEngine, ForwardChainResult
+from .engines.backward import BackwardChainEngine, BackwardChainResult
+from .engines.resolution import ResolutionEngine, ResolutionResult
+from .engines.constraints import ConstraintSolver, solve_sudoku
+from .engines.planner import PlanningEngine, Plan, STRIPSAction
+from .engines.causal import CausalEngine
+from .explain.proof import ProofTree
+from .explain.narrator import Narrator
+from .integrations.llm_extractor import LLMExtractor
 
 
 class QueryResult:

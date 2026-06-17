@@ -4,8 +4,8 @@ FastAPI routes for AxiomAI Reasoner.
 
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+from fastapi import FastAPI, HTTPException, Body
+from pydantic import BaseModel
 from typing import Optional
 from ..engine import Reasoner, QueryResult
 from ..explain.narrator import Narrator
@@ -196,7 +196,7 @@ def solve_csp(req: CSPSolverRequest):
 
 
 @app.post("/sudoku", tags=["Constraints"])
-def solve_sudoku_endpoint(grid: list[list[int]] = Field(default=None)):
+def solve_sudoku_endpoint(grid: list[list[int]] = Body(default=None, embed=True)):
     """Solve a Sudoku puzzle. Pass 9x9 grid with 0 = empty."""
     if grid is None:
         # Default easy puzzle

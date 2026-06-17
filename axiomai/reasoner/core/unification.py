@@ -5,8 +5,8 @@ Unification — First-order unification with occurs check.
 from __future__ import annotations
 
 from typing import Optional
-from axiomai.src.reasoner.core.models import Predicate, Term, TermType
-from axiomai.src.reasoner.core.substitution import Substitution
+from axiomai.reasoner.core.models import Predicate, Term, TermType
+from axiomai.reasoner.core.substitution import Substitution
 
 
 class UnificationResult:

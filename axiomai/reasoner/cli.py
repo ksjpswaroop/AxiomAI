@@ -8,9 +8,9 @@ import typer
 from rich.console import Console
 from rich.table import Table
 from rich import print as rprint
-from ..engine import Reasoner
+from .engine import Reasoner
 
-app = Typer()
+app = typer.Typer()
 console = Console()
 reasoner = Reasoner()
 
@@ -119,7 +119,7 @@ def socrates():
 @app.command()
 def solve_sudoku():
     """Solve the default Sudoku."""
-    from ..engines.constraints import solve_sudoku
+    from .engines.constraints import solve_sudoku
     puzzle = [
         [5, 3, 0, 0, 7, 0, 0, 0, 0],
         [6, 0, 0, 1, 9, 5, 0, 0, 0],
@@ -138,6 +138,10 @@ def solve_sudoku():
             console.print("  " + " ".join(str(c) for c in row))
     else:
         console.print("[red]No solution found[/red]")
+
+
+def main():
+    app()
 
 
 if __name__ == "__main__":
