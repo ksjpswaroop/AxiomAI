@@ -130,6 +130,16 @@ axiomai/
 └── examples/
 ```
 
+## Project Documentation
+
+| Document | Description |
+|----------|-------------|
+| [PROJECT-MODULES.md](./PROJECT-MODULES.md) | Full module breakdown (core engine, platform, apps) |
+| [IMPLEMENTATION-TRACKER.md](./IMPLEMENTATION-TRACKER.md) | Phase-by-phase build tracker with task IDs |
+| [API.md](./API.md) | REST API reference |
+| [business/MASTER-BUSINESS-STRATEGY.md](./business/MASTER-BUSINESS-STRATEGY.md) | GTM strategy and case study priorities |
+| [case-studies/](./case-studies/) | 18 vertical case study specifications |
+
 ## License
 
 MIT
