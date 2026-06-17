@@ -94,7 +94,7 @@ Use this document as the single source of truth for build progress. Update check
 | P1-11 | Wire `LLMExtractor` into `Reasoner.extract(text)` | [ ] | `r.extract("Socrates is human")` adds fact |
 | P1-12 | Implement smart `ask(mode="auto")` selection | [ ] | Picks forward/backward/resolution by query shape |
 | P1-13 | Run hash: SHA-256 of (query + KB fingerprint + result) | [ ] | Same run always produces same hash |
-| P1-14 | Remove or wire unused deps (`kanren`, `unification`) | [ ] | No dead dependencies in pyproject.toml |
+| P1-14 | Remove or wire unused deps (`kanren`, `unification`) | [x] | No dead dependencies in pyproject.toml |
 
 **P1 Exit Criteria:** All 6 engines pass integration tests; determinism test confirms identical outputs.
 
@@ -367,7 +367,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 ## Quick Reference: What Exists Today
 
-### Implemented (can use now, after P0 fixes)
+### Implemented (verified after P0)
 
 - Predicate/Fact/Rule models and parser
 - Backward and forward chaining with proof trees
@@ -376,7 +376,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 - Causal graph engine
 - In-memory KB with contradiction detection
 - FastAPI REST server (all endpoints)
-- Typer CLI commands (after P0-04)
+- Typer CLI commands
 - Explanation narrator (4 styles)
 - `examples/socrates.py` (5 demos)
 
