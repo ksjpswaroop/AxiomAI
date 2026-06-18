@@ -4,6 +4,7 @@ FastAPI routes for AxiomAI Reasoner.
 
 from __future__ import annotations
 
+import os
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
@@ -12,9 +13,16 @@ from pydantic import BaseModel
 from ..engine import Reasoner
 from ..engines.constraints import ConstraintSolver, solve_sudoku
 from ..explain.narrator import Narrator
+from .routes_app import router as app_router
 
-app = FastAPI(title="AxiomAI Reasoner", version="0.3.0")
-reasoner = Reasoner()
+app = FastAPI(
+    title="AxiomAI Reasoner",
+    version="0.3.0",
+    description="Deterministic reasoning engine with governance, case studies, and audit APIs.",
+)
+app.include_router(app_router)
+_persist = os.environ.get("AXIOMAI_PERSIST")
+reasoner = Reasoner(persist=_persist) if _persist else Reasoner()
 
 
 # ── Request Models ───────────────────────────────────────────────────────────

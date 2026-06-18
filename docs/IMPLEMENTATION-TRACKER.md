@@ -32,14 +32,14 @@ Use this document as the single source of truth for build progress. Update check
 | P2 | Platform Layer | 16/16 ✅ | None |
 | P3 | Application Framework | 10/10 ✅ | None |
 | P4 | Tier 1 Case Studies | 3/3 ✅ | None |
-| P5 | Working Application | 0/8 | Depends on P4 |
+| P5 | Working Application | 12/12 ✅ | None |
 | P6 | Tier 2–5 Case Studies | 0/15 verticals | Depends on P5 |
 
-**Overall:** P0–P4 complete. 130 tests passing. CI configured. v0.3.0. Next: P5 working application.
+**Overall:** P0–P5 complete. 140 tests passing. Docker Compose ready. v0.3.0. Next: P6 remaining case studies.
 
-**Active branch:** `cursor/p4-tier1-case-studies-ef4a`
+**Active branch:** `cursor/p5-working-application-ef4a`
 
-**Recommended next:** P5 — web console, API extensions, Docker Compose
+**Recommended next:** P6 — Tier 2 case studies (MSP, Procurement, Data Gov, Cloud Cost)
 
 ---
 
@@ -238,30 +238,30 @@ Use this document as the single source of truth for build progress. Update check
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P5-01 | `/case-studies` endpoint — list available demos | [ ] | Returns CS-02, CS-03, CS-07 metadata |
-| P5-02 | `/case-studies/{id}/run` — execute demo scenario | [ ] | Returns decision + proof + metrics |
-| P5-03 | `/governance/validate` — agent action validation endpoint | [ ] | Uses M15 GovernanceEngine |
-| P5-04 | `/audit` — query audit log | [ ] | Filterable by time, decision, case study |
-| P5-05 | OpenAPI docs updated | [ ] | Swagger UI shows new endpoints |
+| P5-01 | `/case-studies` endpoint — list available demos | [x] | Returns CS-02, CS-03, CS-07 metadata |
+| P5-02 | `/case-studies/{id}/run` — execute demo scenario | [x] | Returns decision + proof + metrics |
+| P5-03 | `/governance/validate` — agent action validation endpoint | [x] | Uses M15 GovernanceEngine |
+| P5-04 | `/audit` — query audit log | [x] | Filterable by time, decision, case study |
+| P5-05 | OpenAPI docs updated | [x] | Swagger UI shows new endpoints |
 
 ### P5b — Web Console (M17)
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P5-06 | Choose UI stack (recommend: Streamlit for MVP speed) | [ ] | Decision documented |
-| P5-07 | KB editor page — add facts/rules, run query | [ ] | Interactive proof viewer |
-| P5-08 | Case study launcher — pick CS-02/03/07, run demo | [ ] | Shows results + metrics |
-| P5-09 | Governance simulator — input agent action, see ALLOW/DENY | [ ] | Proof trace displayed |
-| P5-10 | Docker Compose: API + UI + SQLite | [ ] | `docker compose up` runs full stack |
+| P5-06 | Choose UI stack (recommend: Streamlit for MVP speed) | [x] | Decision documented |
+| P5-07 | KB editor page — add facts/rules, run query | [x] | Interactive proof viewer |
+| P5-08 | Case study launcher — pick CS-02/03/07, run demo | [x] | Shows results + metrics |
+| P5-09 | Governance simulator — input agent action, see ALLOW/DENY | [x] | Proof trace displayed |
+| P5-10 | Docker Compose: API + UI + SQLite | [x] | `docker compose up` runs full stack |
 
 ### P5c — Documentation & Onboarding
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P5-11 | `docs/QUICKSTART.md` — 5-minute getting started | [ ] | New developer can run in 5 min |
-| P5-12 | `docs/DEPLOYMENT.md` — production deployment guide | [ ] | Docker + env vars documented |
+| P5-11 | `docs/QUICKSTART.md` — 5-minute getting started | [x] | New developer can run in 5 min |
+| P5-12 | `docs/DEPLOYMENT.md` — production deployment guide | [x] | Docker + env vars documented |
 
-**P5 Exit Criteria:** `docker compose up` launches working app; all 3 Tier 1 case studies accessible from UI.
+**P5 Exit Criteria:** `docker compose up` launches working app; all 3 Tier 1 case studies accessible from UI. ✅ Met.
 
 ---
 
@@ -331,9 +331,9 @@ M2: P3 complete ────────────► Governance framework dem
          │
 M3: P4 complete ────────────► 3 Tier 1 vertical demos runnable  ✅
          │
-M4: P5 complete ────────────► Working application (Docker + UI)  ← CURRENT TARGET
+M4: P5 complete ────────────► Working application (Docker + UI)  ✅
          │
-M5: P6 Tier 2 ──────────────► 4 additional verticals
+M5: P6 Tier 2 ──────────────► 4 additional verticals  ← CURRENT TARGET
          │
 M6: P6 Tier 3–5 ────────────► All 18 case studies implemented
 ```

@@ -49,6 +49,10 @@ llm = [
     "anthropic>=0.18.0",
     "instructor>=0.5.0",
 ]
+console = [
+    "streamlit>=1.32.0",
+    "httpx>=0.27.0",
+]
 
 [project.scripts]
 axiomai = "axiomai.reasoner.cli:main"
