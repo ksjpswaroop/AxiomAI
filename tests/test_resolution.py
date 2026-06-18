@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from axiomai.reasoner.core.cnf import Clause, Literal
-from axiomai.reasoner.core.models import Fact
 from axiomai.reasoner.core.unification import UnificationEngine
 from axiomai.reasoner.engines.resolution import ResolutionEngine
 from axiomai.reasoner.explain.proof import StepType
@@ -32,7 +31,7 @@ def test_resolve_pair_produces_nonempty_resolvent():
     ])
     result = engine._resolve_pair(c1, c2)
     assert result is not None and result is not False
-    lits = {str(l) for l in result.literals}
+    lits = {str(lit) for lit in result.literals}
     assert "Mortal(Socrates)" in lits
     assert "Rational(Socrates)" in lits
 

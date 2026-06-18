@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from axiomai.reasoner.core.cnf import Literal, fact_to_clause, rule_to_clauses, kb_to_clauses
+from axiomai.reasoner.core.cnf import (
+    Literal,
+    fact_to_clause,
+    kb_to_clauses,
+    rule_to_clauses,
+)
 from axiomai.reasoner.core.models import Fact, Rule
 from axiomai.reasoner.kb.store import KnowledgeBase
 
@@ -20,7 +25,7 @@ def test_rule_to_single_clause():
     rule = Rule.parse("IF Human(x) THEN Mortal(x)")
     clauses = rule_to_clauses(rule)
     assert len(clauses) == 1
-    lits = {str(l) for l in clauses[0].literals}
+    lits = {str(lit) for lit in clauses[0].literals}
     assert "Human(x)" in lits or "¬Human(x)" in lits
     assert "Mortal(x)" in lits or "¬Mortal(x)" in lits
 

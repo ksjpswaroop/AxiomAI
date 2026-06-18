@@ -5,21 +5,22 @@ Combines all components into a single entry point.
 
 from __future__ import annotations
 
-import time
 import hashlib
-from .core.models import Fact, Rule, Predicate
-from .core.unification import UnificationEngine
+import time
+
+from .core.models import Fact, Predicate, Rule
 from .core.parser import Parser
-from .kb.store import KnowledgeBase, ContradictionReport
-from .engines.forward import ForwardChainEngine, ForwardChainResult
-from .engines.backward import BackwardChainEngine, BackwardChainResult
-from .engines.resolution import ResolutionEngine, ResolutionResult
-from .engines.constraints import ConstraintSolver, solve_sudoku
-from .engines.planner import PlanningEngine, Plan, STRIPSAction
+from .core.unification import UnificationEngine
+from .engines.backward import BackwardChainEngine
 from .engines.causal import CausalEngine
-from .explain.proof import ProofTree
+from .engines.constraints import ConstraintSolver
+from .engines.forward import ForwardChainEngine, ForwardChainResult
+from .engines.planner import Plan, PlanningEngine, STRIPSAction
+from .engines.resolution import ResolutionEngine
 from .explain.narrator import Narrator
+from .explain.proof import ProofTree
 from .integrations.llm_extractor import LLMExtractor
+from .kb.store import ContradictionReport, KnowledgeBase
 
 
 class QueryResult:
@@ -73,8 +74,12 @@ class Reasoner:
         print(result.explain())
     """
 
-    def __init__(self, namespace: str = "default", llm_client=None):
-        self.kb = KnowledgeBase(namespace=namespace)
+    def __init__(self, namespace: str = "default", persist: str | None = None, llm_client=None):
+        if persist:
+            from .kb.persistence import PersistentKnowledgeBase
+            self.kb: KnowledgeBase = PersistentKnowledgeBase(url=persist, namespace=namespace)
+        else:
+            self.kb = KnowledgeBase(namespace=namespace)
         self.unification = UnificationEngine()
         self.parser = Parser()
         self.forward_engine = ForwardChainEngine(self.kb, self.unification)
@@ -145,7 +150,7 @@ class Reasoner:
 
     def add_action(
         self, name: str, preconditions: list[str],
-        add_effects: list[str], del_effects: list[str] = None, cost: int = 1
+        add_effects: list[str], del_effects: list[str] | None = None, cost: int = 1
     ) -> STRIPSAction:
         """Add a planning action (STRIPS-style)."""
         action = STRIPSAction(
@@ -172,34 +177,34 @@ class Reasoner:
             mode = self._select_mode(query)
 
         if mode == "backward":
-            result = self.backward_engine.prove(query)
+            bc = self.backward_engine.prove(query)
             qr = QueryResult(
                 query=query,
-                result=result.result,
-                proof=result.proof,
-                bindings=result.bindings,
+                result=bc.result,
+                proof=bc.proof,
+                bindings=bc.bindings,
                 duration_ms=(time.perf_counter() - start) * 1000,
                 reasoning_mode="backward_chaining",
                 narrator=self._narrator,
             )
         elif mode == "forward":
-            result = self.forward_engine.run()
-            found = any(str(f.predicate) == query for f in result.all_derived)
+            fc = self.forward_engine.run()
+            found = any(str(f.predicate) == query for f in fc.all_derived)
             qr = QueryResult(
                 query=query,
                 result="PROVED" if found else "DISPROVED",
-                proof=result.proof,
+                proof=fc.proof,
                 bindings={},
                 duration_ms=(time.perf_counter() - start) * 1000,
                 reasoning_mode="forward_chaining",
                 narrator=self._narrator,
             )
         elif mode == "resolution":
-            result = self.resolution_engine.prove(query)
+            res = self.resolution_engine.prove(query)
             qr = QueryResult(
                 query=query,
-                result="PROVED" if result.provable else "DISPROVED",
-                proof=result.proof,
+                result="PROVED" if res.provable else "DISPROVED",
+                proof=res.proof,
                 bindings={},
                 duration_ms=(time.perf_counter() - start) * 1000,
                 reasoning_mode="resolution",
@@ -211,6 +216,15 @@ class Reasoner:
         self._run_hash = hashlib.sha256(
             f"{query}|{self.fingerprint()}|{qr.result}".encode()
         ).hexdigest()[:16]
+
+        if hasattr(self.kb, "record_inference_run"):
+            self.kb.record_inference_run(
+                query, qr.reasoning_mode, qr.result, qr.duration_ms, self._run_hash
+            )
+            self.kb.record_proof(
+                query, qr.result, qr.proof.to_json(), self._run_hash
+            )
+
         return qr
 
     def _select_mode(self, query: str) -> str:

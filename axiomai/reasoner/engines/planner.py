@@ -6,7 +6,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Optional
-from ..explain.proof import ProofTree, ProofStep, StepType
 
 
 @dataclass

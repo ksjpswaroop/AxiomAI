@@ -7,9 +7,9 @@ from __future__ import annotations
 import re
 import time
 
-from ..core.cnf import Clause, Literal, kb_to_clauses, clause_key
+from ..core.cnf import Clause, Literal, clause_key, kb_to_clauses
 from ..core.unification import UnificationEngine
-from ..explain.proof import ProofTree, ProofStep, StepType
+from ..explain.proof import ProofStep, ProofTree, StepType
 from ..kb.store import KnowledgeBase
 
 
@@ -90,7 +90,7 @@ class ResolutionEngine:
                             proof.add_step(ProofStep(
                                 step=step_num,
                                 type=StepType.RESOLVE,
-                                content=", ".join(str(l) for l in result.literals),
+                                content=", ".join(str(lit) for lit in result.literals),
                                 justification=f"Resolved {c1} with {c2}",
                             ))
                             step_num += 1
@@ -161,7 +161,7 @@ class ResolutionEngine:
     def _z3_prove(self, query_str: str) -> bool:
         """Z3 fallback: KB ∪ {¬query} unsatisfiable ⇒ query provable."""
         try:
-            from z3 import Solver, Bool, Not, Or, unsat
+            from z3 import Bool, Not, Or, Solver, unsat
 
             solver = Solver()
             bool_vars: dict[str, object] = {}

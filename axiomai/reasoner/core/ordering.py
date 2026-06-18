@@ -4,7 +4,7 @@ Ordering — Deterministic rule/fact ordering for reproducible inference.
 
 from __future__ import annotations
 
-from ..core.models import Rule, Fact, Predicate
+from ..core.models import Fact, Predicate, Rule
 
 
 class OrderingEngine:

@@ -39,7 +39,7 @@ def test_derived_contradiction_detected():
 
 def test_retraction_cascades_to_derived_facts():
     kb = KnowledgeBase()
-    parent = kb.add_fact(Fact.create("Human(Socrates)"))
+    kb.add_fact(Fact.create("Human(Socrates)"))
     derived = Fact.create("Mortal(Socrates)", source="rule:r1")
     kb.add_derived_fact(derived, rule_ids=["r1"], source_fact_keys=["Human(Socrates)"])
     assert kb.query_fact("Mortal(Socrates)")

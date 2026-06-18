@@ -7,7 +7,7 @@ from __future__ import annotations
 import typer
 from rich.console import Console
 from rich.table import Table
-from rich import print as rprint
+
 from .engine import Reasoner
 
 app = typer.Typer()
@@ -78,7 +78,7 @@ def prove(query: str):
 def forward():
     """Run forward chaining and show all derived facts."""
     result = reasoner.derive_all()
-    console.print(f"\n[bold]Forward Chaining Results[/bold]")
+    console.print("\n[bold]Forward Chaining Results[/bold]")
     console.print(f"New facts: {len(result.new_facts)}")
     console.print(f"Total derived: {len(result.all_derived)}")
     console.print(f"Duration: {result.duration_ms:.2f}ms\n")

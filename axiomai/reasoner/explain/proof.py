@@ -4,8 +4,8 @@ Proof — Structured proof tree nodes for explanation.
 
 from __future__ import annotations
 
-import uuid
 import json
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum

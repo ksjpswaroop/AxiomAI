@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from axiomai import Reasoner
-
 
 def test_extract_adds_facts_and_rules(reasoner):
     result = reasoner.extract("Socrates is a human. All humans are mortal.")

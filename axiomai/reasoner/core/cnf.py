@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from .models import Fact, Rule, Predicate
 from ..kb.store import KnowledgeBase
+from .models import Fact, Predicate, Rule
 
 
 @dataclass(frozen=True)
@@ -46,18 +46,18 @@ class Clause:
     literals: list[Literal] = field(default_factory=list)
 
     def __hash__(self) -> int:
-        return hash(tuple(sorted(str(l) for l in self.literals)))
+        return hash(tuple(sorted(str(lit) for lit in self.literals)))
 
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, Clause):
             return False
-        return {str(l) for l in self.literals} == {str(l) for l in other.literals}
+        return {str(lit) for lit in self.literals} == {str(lit) for lit in other.literals}
 
     def is_empty(self) -> bool:
         return len(self.literals) == 0
 
     def contains_literal(self, other: Literal) -> bool:
-        return any(str(l) == str(other) for l in self.literals)
+        return any(str(lit) == str(other) for lit in self.literals)
 
 
 def fact_to_clause(fact: Fact) -> Clause:
@@ -100,4 +100,4 @@ def kb_to_clauses(kb: KnowledgeBase) -> list[Clause]:
 
 def clause_key(clause: Clause) -> str:
     """Deterministic key for clause deduplication."""
-    return "|".join(sorted(str(l) for l in clause.literals))
+    return "|".join(sorted(str(lit) for lit in clause.literals))

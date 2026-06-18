@@ -5,8 +5,8 @@ All structured logic objects for the reasoning engine.
 
 from __future__ import annotations
 
-import uuid
 import re
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum

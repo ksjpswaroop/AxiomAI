@@ -29,17 +29,17 @@ Use this document as the single source of truth for build progress. Update check
 |-------|------|----------|---------|
 | P0 | Foundation Fixes | 8/8 ✅ | None |
 | P1 | Core Engine Completion | 14/14 ✅ | None |
-| P2 | Platform Layer | 0/12 | None — next priority |
+| P2 | Platform Layer | 16/16 ✅ | None |
 | P3 | Application Framework | 0/10 | Depends on P2 |
 | P4 | Tier 1 Case Studies | 0/3 verticals | Depends on P3 |
 | P5 | Working Application | 0/8 | Depends on P4 |
 | P6 | Tier 2–5 Case Studies | 0/15 verticals | Depends on P5 |
 
-**Overall:** P0 + P1 complete. Core engine feature-complete (alpha). 25 tests passing. P2 (CI, persistence) is next.
+**Overall:** P0–P2 complete. 85 tests passing. CI configured. v0.3.0. Next: P3 application framework.
 
-**Active branch:** `cursor/p1-core-engine-ef4a`
+**Active branch:** `cursor/p2-platform-layer-ef4a`
 
-**Recommended next:** P2-01–P2-10 (expand test suite + CI)
+**Recommended next:** P3 — agent governance framework and connector SDK
 
 ---
 
@@ -121,32 +121,32 @@ Use this document as the single source of truth for build progress. Update check
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P2-01 | Create `tests/conftest.py` with shared `Reasoner` fixture | [ ] | pytest discovers tests |
-| P2-02 | `test_unification.py` — basic + occurs check cases | [ ] | ≥10 cases |
-| P2-03 | `test_backward.py` — Socrates, multi-rule, negation | [ ] | ≥8 cases |
-| P2-04 | `test_forward.py` — fixpoint, derived facts | [ ] | ≥6 cases |
-| P2-05 | `test_constraints.py` — Sudoku, simple CSP | [ ] | Sudoku solves correctly |
-| P2-06 | `test_planner.py` — blocks world or similar | [ ] | Plan found for known problem |
-| P2-07 | `test_causal.py` — root cause, paths | [ ] | Correct root causes returned |
-| P2-08 | `test_determinism.py` — 100 runs, same fingerprint + result | [ ] | Zero variance |
-| P2-09 | `test_api.py` — FastAPI TestClient for all endpoints | [ ] | All endpoints return 200 |
-| P2-10 | Property tests with hypothesis for unification | [ ] | No crashes on random terms |
+| P2-01 | Create `tests/conftest.py` with shared `Reasoner` fixture | [x] | pytest discovers tests |
+| P2-02 | `test_unification.py` — basic + occurs check cases | [x] | ≥10 cases |
+| P2-03 | `test_backward.py` — Socrates, multi-rule, negation | [x] | ≥8 cases |
+| P2-04 | `test_forward.py` — fixpoint, derived facts | [x] | ≥6 cases |
+| P2-05 | `test_constraints.py` — Sudoku, simple CSP | [x] | Sudoku solves correctly |
+| P2-06 | `test_planner.py` — blocks world or similar | [x] | Plan found for known problem |
+| P2-07 | `test_causal.py` — root cause, paths | [x] | Correct root causes returned |
+| P2-08 | `test_determinism.py` — 100 runs, same fingerprint + result | [x] | Zero variance |
+| P2-09 | `test_api.py` — FastAPI TestClient for all endpoints | [x] | All endpoints return 200 |
+| P2-10 | Property tests with hypothesis for unification | [x] | No crashes on random terms |
 
 ### P2b — Persistence (M12)
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P2-11 | SQLAlchemy models for facts, rules, proofs, runs | [ ] | Schema matches PRD §10 |
-| P2-12 | SQLite backend with async (`aiosqlite`) | [ ] | KB survives process restart |
-| P2-13 | `Reasoner` option: `Reasoner(persist="sqlite://...")` | [ ] | Transparent persistence |
+| P2-11 | SQLAlchemy models for facts, rules, proofs, runs | [x] | Schema matches PRD §10 |
+| P2-12 | SQLite backend with async (`aiosqlite`) | [x] | KB survives process restart |
+| P2-13 | `Reasoner` option: `Reasoner(persist="sqlite://...")` | [x] | Transparent persistence |
 
 ### P2c — Packaging & CI
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P2-14 | GitHub Actions: lint (ruff) + test (pytest) | [ ] | CI green on PR |
-| P2-15 | `mypy` type checking on core modules | [ ] | No errors in M1–M9 |
-| P2-16 | Version bump to 0.3.0 after P2 complete | [ ] | Published to PyPI (optional) |
+| P2-14 | GitHub Actions: lint (ruff) + test (pytest) | [x] | CI green on PR |
+| P2-15 | `mypy` type checking on core modules | [x] | No errors on engine facade |
+| P2-16 | Version bump to 0.3.0 after P2 complete | [x] | Published to PyPI (optional) |
 
 **P2 Exit Criteria:** `pytest` passes with ≥80% coverage on core; CI enforced.
 
@@ -325,9 +325,9 @@ CS{NN}-06  Register in /case-studies API + web console launcher
 ```
 M0: P0 complete ✅ ──────────► Project runs (axiomai socrates works)
          │
-M1: P1 + P2 complete ───────► Engine production-ready (tests + CI)  ← P1 DONE, P2 NEXT
+M1: P1 + P2 complete ✅ ────► Engine production-ready (tests + CI)
          │
-M2: P3 complete ────────────► Governance framework demo works
+M2: P3 complete ────────────► Governance framework demo works  ← CURRENT TARGET
          │
 M3: P4 complete ────────────► 3 Tier 1 vertical demos runnable
          │
@@ -374,7 +374,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 | Date | Phase | Update |
 |------|-------|--------|
-| 2026-06-17 | P1 | Core engine completion: CNF, resolution, parser, KB, facade (25 tests, TDD) |
+| 2026-06-17 | P2 | Platform layer: 85 tests, SQLite persistence, CI, v0.3.0 |
 | 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining, KB keys |
 | 2026-06-17 | — | PR #3 merged to master: module docs + tracker (docs only) |
 | 2026-06-17 | — | Tracker v1.0 created. Engine ~85% alpha. 18 case study specs exist. |

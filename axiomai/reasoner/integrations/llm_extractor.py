@@ -6,8 +6,8 @@ Uses structured output (Pydantic) to constrain LLM responses.
 from __future__ import annotations
 
 import json
-from typing import Optional
-from ..core.models import Fact, Rule, Predicate
+
+from ..core.models import Fact, Predicate, Rule
 from ..core.parser import Parser, ParserError
 
 

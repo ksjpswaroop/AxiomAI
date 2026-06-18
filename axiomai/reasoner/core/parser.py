@@ -5,8 +5,8 @@ Parser — Parse predicate strings into structured objects.
 from __future__ import annotations
 
 import re
-from typing import Union
-from ..core.models import Predicate, Fact, Rule, Term, TermType, Entity
+
+from ..core.models import Entity, Fact, Predicate, Rule
 
 
 class ParserError(ValueError):

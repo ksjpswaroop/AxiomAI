@@ -4,7 +4,7 @@ Explanation Engine — Generate human-readable explanations from proof trees.
 
 from __future__ import annotations
 
-from ..explain.proof import ProofTree, ProofStep, StepType
+from ..explain.proof import ProofTree, StepType
 
 
 class Narrator:

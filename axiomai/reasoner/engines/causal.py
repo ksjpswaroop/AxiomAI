@@ -5,7 +5,6 @@ Causal Reasoning — Causal graph reasoning with NetworkX.
 from __future__ import annotations
 
 import networkx as nx
-from ..explain.proof import ProofTree, ProofStep, StepType
 
 
 class CausalEngine:
@@ -52,7 +51,7 @@ class CausalEngine:
         try:
             path = nx.shortest_path(self._graph, cause, effect)
             return path
-        except nx.NetworkXNoPath:
+        except (nx.NetworkXNoPath, nx.NodeNotFound):
             return None
 
     def all_paths(self, cause: str, effect: str) -> list[list[str]]:

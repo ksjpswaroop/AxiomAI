@@ -4,15 +4,16 @@ FastAPI routes for AxiomAI Reasoner.
 
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
 from typing import Optional
-from ..engine import Reasoner, QueryResult
-from ..explain.narrator import Narrator
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+from ..engine import Reasoner
 from ..engines.constraints import ConstraintSolver, solve_sudoku
+from ..explain.narrator import Narrator
 
-
-app = FastAPI(title="AxiomAI Reasoner", version="0.1.0")
+app = FastAPI(title="AxiomAI Reasoner", version="0.3.0")
 reasoner = Reasoner()
 
 
@@ -57,6 +58,10 @@ class ActionRequest(BaseModel):
     add_effects: list[str]
     del_effects: list[str] = []
     cost: int = 1
+
+
+class SudokuRequest(BaseModel):
+    grid: list[list[int]] | None = None
 
 
 # ── Fact Endpoints ───────────────────────────────────────────────────────────
@@ -196,10 +201,10 @@ def solve_csp(req: CSPSolverRequest):
 
 
 @app.post("/sudoku", tags=["Constraints"])
-def solve_sudoku_endpoint(grid: list[list[int]] = Field(default=None)):
+def solve_sudoku_endpoint(req: SudokuRequest = SudokuRequest()):
     """Solve a Sudoku puzzle. Pass 9x9 grid with 0 = empty."""
+    grid = req.grid
     if grid is None:
-        # Default easy puzzle
         grid = [
             [5, 3, 0, 0, 7, 0, 0, 0, 0],
             [6, 0, 0, 1, 9, 5, 0, 0, 0],
@@ -287,7 +292,7 @@ def stats():
 
 @app.get("/health", tags=["Utility"])
 def health():
-    return {"status": "healthy", "version": "0.1.0"}
+    return {"status": "healthy", "version": "0.3.0"}
 
 
 # ── Run ─────────────────────────────────────────────────────────────────────

@@ -6,11 +6,11 @@ SQLite and graph-backed stores extend this.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional, Union
-from ..core.models import Fact, Rule, Predicate, Entity, RelationDef
-from ..core.substitution import Substitution
+
+from ..core.models import Entity, Fact, Predicate, RelationDef, Rule
 from ..core.ordering import OrderingEngine
 
 
@@ -223,6 +223,27 @@ class KnowledgeBase:
         parts = sorted(self._facts.keys()) + [str(r) for r in self.list_rules()]
         content = "|".join(parts)
         return hashlib.sha256(content.encode()).hexdigest()[:16]
+
+    def record_inference_run(
+        self,
+        query: str,
+        mode: str,
+        result: str,
+        duration_ms: float,
+        run_hash: str,
+    ) -> str:
+        """No-op for in-memory KB. Overridden by PersistentKnowledgeBase."""
+        return ""
+
+    def record_proof(
+        self,
+        query: str,
+        result: str,
+        proof_json: str,
+        run_hash: Optional[str] = None,
+    ) -> str:
+        """No-op for in-memory KB. Overridden by PersistentKnowledgeBase."""
+        return ""
 
     # ── Stats ───────────────────────────────────────────────────────────────
 
