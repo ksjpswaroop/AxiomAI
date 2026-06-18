@@ -91,10 +91,21 @@ solve_sudoku(grid)  # 9x9 list of lists
 | DELETE | `/facts` | Retract a fact |
 | POST | `/rules` | Add a rule |
 | GET | `/rules` | List all rules |
+| POST | `/extract` | Extract facts/rules from natural language |
 | POST | `/query` | Ask a query |
 | POST | `/forward` | Forward chain |
 | POST | `/resolution` | Resolution proof |
-| GET | `/contradictions` | Check consistency |
+| GET | `/policies` | List governance policy packs |
+| POST | `/governance/validate` | Validate agent action (supports `policy_id`) |
+| GET | `/audit` | Query governance audit log |
+| GET | `/contradictions/history` | List persisted contradiction records |
+| GET | `/proofs` | List persisted proof traces |
+| GET | `/proofs/{id}` | Fetch a proof by ID |
+| GET | `/inference-runs` | List persisted inference runs |
+| GET | `/inference-runs/{id}` | Fetch an inference run by ID |
+| POST | `/connectors/webhook/facts` | Ingest facts via webhook |
+| GET | `/connectors/webhook/facts` | List buffered webhook facts |
+| POST | `/connectors/file/ingest` | Ingest facts from server file path |
 | POST | `/constraints/solve` | Solve CSP |
 | POST | `/sudoku` | Solve Sudoku |
 | POST | `/planning/plan` | Generate plan |

@@ -1,0 +1,6 @@
+{
+  "facts": [
+    "SecretInCode(pr42)",
+    "RouteWithoutAuth(pr42)"
+  ]
+}

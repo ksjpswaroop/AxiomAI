@@ -5,21 +5,22 @@ Combines all components into a single entry point.
 
 from __future__ import annotations
 
-import time
 import hashlib
-from .core.models import Fact, Rule, Predicate
-from .core.unification import UnificationEngine
+import time
+
+from .core.models import Fact, Predicate, Rule
 from .core.parser import Parser
-from .kb.store import KnowledgeBase, ContradictionReport
-from .engines.forward import ForwardChainEngine, ForwardChainResult
-from .engines.backward import BackwardChainEngine, BackwardChainResult
-from .engines.resolution import ResolutionEngine, ResolutionResult
-from .engines.constraints import ConstraintSolver, solve_sudoku
-from .engines.planner import PlanningEngine, Plan, STRIPSAction
+from .core.unification import UnificationEngine
+from .engines.backward import BackwardChainEngine
 from .engines.causal import CausalEngine
-from .explain.proof import ProofTree
+from .engines.constraints import ConstraintSolver
+from .engines.forward import ForwardChainEngine, ForwardChainResult
+from .engines.planner import Plan, PlanningEngine, STRIPSAction
+from .engines.resolution import ResolutionEngine
 from .explain.narrator import Narrator
+from .explain.proof import ProofTree
 from .integrations.llm_extractor import LLMExtractor
+from .kb.store import ContradictionReport, KnowledgeBase
 
 
 class QueryResult:
@@ -73,8 +74,18 @@ class Reasoner:
         print(result.explain())
     """
 
-    def __init__(self, namespace: str = "default"):
-        self.kb = KnowledgeBase(namespace=namespace)
+    def __init__(
+        self,
+        namespace: str = "default",
+        persist: str | None = None,
+        llm_client=None,
+        llm: str | None = None,
+    ):
+        if persist:
+            from .kb.persistence import PersistentKnowledgeBase
+            self.kb: KnowledgeBase = PersistentKnowledgeBase(url=persist, namespace=namespace)
+        else:
+            self.kb = KnowledgeBase(namespace=namespace)
         self.unification = UnificationEngine()
         self.parser = Parser()
         self.forward_engine = ForwardChainEngine(self.kb, self.unification)
@@ -82,6 +93,10 @@ class Reasoner:
         self.resolution_engine = ResolutionEngine(self.kb, self.unification)
         self.causal_engine = CausalEngine()
         self.planning_engine = PlanningEngine()
+        from .integrations.llm_client import create_llm_client
+
+        client = llm_client or create_llm_client(llm)
+        self._llm_extractor = LLMExtractor(client)
         self._narrator = Narrator()
         self._run_hash: str = ""
         self._run_count: int = 0
@@ -91,6 +106,9 @@ class Reasoner:
     def add_fact(self, predicate: str, source: str = "user", **kwargs) -> Fact:
         """Add a fact to the knowledge base."""
         fact = self.parser.parse_fact(predicate, source=source)
+        if fact.predicate.namespace == "default":
+            fact.predicate.namespace = self.kb.namespace
+            fact.predicate._str_cache = None
         for k, v in kwargs.items():
             setattr(fact, k, v)
         return self.kb.add_fact(fact)
@@ -141,7 +159,7 @@ class Reasoner:
 
     def add_action(
         self, name: str, preconditions: list[str],
-        add_effects: list[str], del_effects: list[str] = None, cost: int = 1
+        add_effects: list[str], del_effects: list[str] | None = None, cost: int = 1
     ) -> STRIPSAction:
         """Add a planning action (STRIPS-style)."""
         action = STRIPSAction(
@@ -164,41 +182,38 @@ class Reasoner:
         self._run_count += 1
         start = time.perf_counter()
 
-        # Auto-select mode
         if mode == "auto":
-            # Forward chain if no rules match, backward if they might
-            mode = "backward"
+            mode = self._select_mode(query)
 
         if mode == "backward":
-            result = self.backward_engine.prove(query)
-            return QueryResult(
+            bc = self.backward_engine.prove(query)
+            qr = QueryResult(
                 query=query,
-                result=result.result,
-                proof=result.proof,
-                bindings=result.bindings,
+                result=bc.result,
+                proof=bc.proof,
+                bindings=bc.bindings,
                 duration_ms=(time.perf_counter() - start) * 1000,
                 reasoning_mode="backward_chaining",
                 narrator=self._narrator,
             )
         elif mode == "forward":
-            result = self.forward_engine.run()
-            # Check if query is in derived facts
-            found = any(str(f.predicate) == query for f in result.all_derived)
-            return QueryResult(
+            fc = self.forward_engine.run()
+            found = any(str(f.predicate) == query for f in fc.all_derived)
+            qr = QueryResult(
                 query=query,
                 result="PROVED" if found else "DISPROVED",
-                proof=result.proof,
+                proof=fc.proof,
                 bindings={},
                 duration_ms=(time.perf_counter() - start) * 1000,
                 reasoning_mode="forward_chaining",
                 narrator=self._narrator,
             )
         elif mode == "resolution":
-            result = self.resolution_engine.prove(query)
-            return QueryResult(
+            res = self.resolution_engine.prove(query)
+            qr = QueryResult(
                 query=query,
-                result="PROVED" if result.provable else "DISPROVED",
-                proof=result.proof,
+                result="PROVED" if res.provable else "DISPROVED",
+                proof=res.proof,
                 bindings={},
                 duration_ms=(time.perf_counter() - start) * 1000,
                 reasoning_mode="resolution",
@@ -206,6 +221,104 @@ class Reasoner:
             )
         else:
             return self.ask(query, mode="backward")
+
+        self._run_hash = hashlib.sha256(
+            f"{query}|{self.fingerprint()}|{qr.result}".encode()
+        ).hexdigest()[:16]
+
+        if hasattr(self.kb, "record_inference_run"):
+            self.kb.record_inference_run(
+                query, qr.reasoning_mode, qr.result, qr.duration_ms, self._run_hash
+            )
+            self.kb.record_proof(
+                query, qr.result, qr.proof.to_json(), self._run_hash
+            )
+
+        return qr
+
+    def _select_mode(self, query: str) -> str:
+        """Pick inference mode based on KB shape and query."""
+        goal = Predicate.parse(query)
+        if self.kb.query_fact(query):
+            return "backward"
+        if self.kb.get_rules_for_consequent(goal):
+            return "backward"
+        if not self.kb.get_enabled_rules():
+            return "forward"
+        if len(self.kb.list_active_facts()) <= 10 and len(self.kb.get_enabled_rules()) <= 5:
+            return "resolution"
+        return "backward"
+
+    def extract(self, text: str, *, load: bool = True) -> dict:
+        """
+        Extract facts and rules from natural language.
+
+        When ``load=True`` (default), extracted items are added to the KB.
+        """
+        extracted = self._llm_extractor.extract(text)
+        facts = extracted["facts"]
+        rules = extracted["rules"]
+        if load:
+            for fact in facts:
+                if fact.predicate.namespace == "default":
+                    fact.predicate.namespace = self.kb.namespace
+                    fact.predicate._str_cache = None
+                self.kb.add_fact(fact)
+            for rule in rules:
+                self.kb.add_rule(rule)
+        return {"facts": facts, "rules": rules, "stats": self._llm_extractor.stats()}
+
+    def llm_stats(self) -> dict:
+        """Return LLM extraction statistics."""
+        return self._llm_extractor.stats()
+
+    def last_run_hash(self) -> str:
+        """SHA-256 hash of the last query run (query + KB fingerprint + result)."""
+        return self._run_hash
+
+    def list_proofs(
+        self,
+        query: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """List persisted proof traces (requires persistent KB)."""
+        if hasattr(self.kb, "list_proofs"):
+            return self.kb.list_proofs(query=query, limit=limit, offset=offset)
+        return []
+
+    def get_proof(self, proof_id: str) -> dict | None:
+        """Fetch a persisted proof by ID."""
+        if hasattr(self.kb, "get_proof"):
+            return self.kb.get_proof(proof_id)
+        return None
+
+    def list_inference_runs(
+        self,
+        query: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """List persisted inference runs (requires persistent KB)."""
+        if hasattr(self.kb, "list_inference_runs"):
+            return self.kb.list_inference_runs(query=query, limit=limit, offset=offset)
+        return []
+
+    def get_inference_run(self, run_id: str) -> dict | None:
+        """Fetch a persisted inference run by ID."""
+        if hasattr(self.kb, "get_inference_run"):
+            return self.kb.get_inference_run(run_id)
+        return None
+
+    def list_persisted_contradictions(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """List contradiction records from persistent storage."""
+        if hasattr(self.kb, "list_contradictions"):
+            return self.kb.list_contradictions(limit=limit, offset=offset)
+        return []
 
     def derive_all(self) -> ForwardChainResult:
         """Run forward chaining to derive everything possible."""

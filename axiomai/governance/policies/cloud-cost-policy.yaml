@@ -1,0 +1,18 @@
+name: cloud-cost-policy
+version: "1.0"
+action_type: cloud_resource
+rules:
+  - IF GpuInstance(x) AND MonthlyCost(x, c) AND OverCost5000(c) THEN RequiresFinanceApproval(x)
+  - IF HighMemInstance(x) AND MonthlyCost(x, c) AND OverCost2000(c) THEN RequiresTeamLeadApproval(x)
+  - IF NewRegion(x) THEN RequiresSecurityReview(x)
+  - IF StorageTb(x, t) AND OverStorage10Tb(t) THEN RequiresStorageApproval(x)
+  - IF MonthlyEgressCost(x, c) AND OverEgress1000(c) THEN AlertFinance(x)
+  - IF RequiresFinanceApproval(x) AND LongCommitment(x) THEN ResourceBlocked(x)
+  - IF RequiresSecurityReview(x) THEN ResourceBlocked(x)
+allow_query: "ResourceApproved({entity})"
+deny_queries:
+  - "ResourceBlocked({entity})"
+escalate_queries:
+  - "RequiresFinanceApproval({entity})"
+  - "AlertFinance({entity})"
+  - "RequiresTeamLeadApproval({entity})"

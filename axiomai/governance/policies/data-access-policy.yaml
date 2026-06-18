@@ -1,0 +1,17 @@
+name: data-access-policy
+version: "1.0"
+action_type: data_access
+rules:
+  - IF DataClassification(x, PHI) AND ApprovedHealthcareRole(u) AND HipaaTraining(u) THEN GrantAccess(u, x)
+  - IF DataClassification(x, PCI) AND FinanceDepartment(u) AND BackgroundCheck(u) THEN GrantAccess(u, x)
+  - IF DataClassification(x, PII) AND ApprovedCustomerRole(u) AND ManagerApproval(u) THEN GrantAccess(u, x)
+  - IF DataAnalystRole(u) AND FullSalesforceAccess(x) THEN AccessDenied_Role(u, x)
+  - IF DataClassification(x, PCI) AND NotFinanceDepartment(u) THEN AccessDenied_PCI(u, x)
+  - IF TerminatedEmployee(u) THEN RevokeAllAccess(u)
+allow_query: "GrantAccess({entity}, ar9942)"
+deny_queries:
+  - "AccessDenied_Role({entity}, ar9942)"
+  - "AccessDenied_PCI({entity}, ar9942)"
+  - "RevokeAllAccess({entity})"
+escalate_queries:
+  - "ManagerApprovalRequired({entity})"

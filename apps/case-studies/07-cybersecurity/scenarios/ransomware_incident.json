@@ -1,0 +1,26 @@
+{
+  "incident_id": "INC-2026-0617-0042",
+  "host": "Host42",
+  "severity": "critical",
+  "facts": [
+    {"predicate": "EmailClick(User001)", "timestamp": "2026-06-17T09:14:22Z", "evidence": "User001 opened attachment"},
+    {"predicate": "OpenedAttachment(User001)", "timestamp": "2026-06-17T09:14:22Z", "evidence": "User001 opened attachment"},
+    {"predicate": "PowerShellLaunched(User001)", "timestamp": "2026-06-17T09:14:35Z", "evidence": "encoded command detected"},
+    {"predicate": "EncodedCommand(User001)", "timestamp": "2026-06-17T09:14:35Z", "evidence": "encoded command detected"},
+    {"predicate": "ScheduledTaskCreated(User001)", "timestamp": "2026-06-17T09:14:40Z", "evidence": "persistence task created"},
+    {"predicate": "C2Traffic(Host42)", "timestamp": "2026-06-17T09:15:00Z", "evidence": "beacon to 45.33.x.x every 30s"},
+    {"predicate": "BeaconPattern(Host42)", "timestamp": "2026-06-17T09:15:00Z", "evidence": "beacon to 45.33.x.x every 30s"},
+    {"predicate": "OutboundTrafficSpike(Host42)", "timestamp": "2026-06-17T09:15:00Z", "evidence": "outbound traffic spike"},
+    {"predicate": "LateralMovementDetected(Host42)", "timestamp": "2026-06-17T09:16:00Z", "evidence": "lateral movement detected"},
+    {"predicate": "AdminCredentialUse(Admin001, Workstation18)", "timestamp": "2026-06-17T09:16:00Z", "evidence": "Admin001 on Workstation18"},
+    {"predicate": "UnusualHostAccess(Admin001, Workstation18)", "timestamp": "2026-06-17T09:16:00Z", "evidence": "Admin001 on Workstation18"},
+    {"predicate": "FileEncryptionStarted(Host42)", "timestamp": "2026-06-17T09:17:00Z", "evidence": "3,421 files modified"},
+    {"predicate": "AffectedHost(Host42)", "timestamp": "2026-06-17T09:17:00Z", "evidence": "primary impacted host"},
+    {"predicate": "MalwareFamily(Emotet)", "timestamp": "2026-06-17T09:17:05Z", "evidence": "Emotet indicators"},
+    {"predicate": "BlockedIP(45_33_x_x)", "timestamp": "2026-06-17T09:17:10Z", "evidence": "C2 IP identified"}
+  ],
+  "mttr": {
+    "before_minutes": 360,
+    "after_minutes": 45
+  }
+}

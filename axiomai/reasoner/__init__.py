@@ -5,8 +5,8 @@ Facts + Rules = Proven Answers
 
 __version__ = "0.2.0"
 
-from axiomai.reasoner.engine import Reasoner, QueryResult
-from axiomai.reasoner.core.models import Fact, Rule, Predicate, Entity
+from axiomai.reasoner.core.models import Entity, Fact, Predicate, Rule
+from axiomai.reasoner.engine import QueryResult, Reasoner
 from axiomai.reasoner.explain.proof import ProofTree
 from axiomai.reasoner.kb.store import KnowledgeBase
 

@@ -5,12 +5,15 @@ Z3 Adapter — Connect Z3 solver to the reasoning engine.
 from __future__ import annotations
 
 from z3 import (
-    Solver, Int, Bool, Real, String, FreshInt,
-    sat, unsat, unknown,
-    Or, And, Not, Implies, Xor,
-    ForAll, Exists,
+    And,
+    Bool,
+    Int,
+    Not,
+    Or,
+    Solver,
+    sat,
+    unsat,
 )
-from ..engines.constraints import ConstraintSolver
 
 
 class Z3Adapter:
