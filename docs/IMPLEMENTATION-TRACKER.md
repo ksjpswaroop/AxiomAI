@@ -35,9 +35,9 @@ Use this document as the single source of truth for build progress. Update check
 | P5 | Working Application | 12/12 ✅ | None |
 | P6 | Tier 2–5 Case Studies | 15/15 ✅ | None |
 
-**Overall:** P0–P6 complete. 187 tests passing. All 18 case studies runnable. v0.3.0.
+**Overall:** P0–P6 complete. 259 tests passing. All 18 case studies runnable. v0.3.0.
 
-**Active branch:** `cursor/p6-case-studies-ef4a`
+**Active branch:** `cursor/project-modules-tracker-ef4a`
 
 **Recommended next:** Production hardening, PyPI publish, customer pilots
 
@@ -386,7 +386,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 | Date | Phase | Update |
 |------|-------|--------|
 | 2026-06-18 | Platform | Full verification — all 9 former "Not Implemented" items complete |
-| 2026-06-18 | P6 | All 15 remaining case studies — 18/18 verticals, 187 tests |
+| 2026-06-18 | P6 | All 15 remaining case studies — 18/18 verticals, 259 tests |
 | 2026-06-17 | P5 | Working app — API extensions, Streamlit console, Docker Compose |
 | 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining, KB keys |
 | 2026-06-17 | — | PR #3 merged to master: module docs + tracker (docs only) |
@@ -414,7 +414,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 - Root `README.md`, `LICENSE`, corrected doc paths
 - Full resolution engine (SOS, subsumption, factorization, Z3 fallback)
 - Persistent storage (SQLite facts/rules/proofs/runs/contradictions + query API)
-- Test suite with coverage enforcement (≥75% on core, 229+ tests)
+- Test suite with coverage enforcement (≥75% on core, 259+ tests)
 - LLM integration on Reasoner facade (`LLMClient`, `/extract`, CLI)
 - Agent governance framework (`AgentGovernanceMiddleware`, multi-policy, persistent audit)
 - Connector SDK + REST API (`/connectors/webhook/facts`, `/connectors/file/ingest`)
