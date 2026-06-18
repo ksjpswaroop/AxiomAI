@@ -1,0 +1,6 @@
+{
+  "facts": [
+    "GpuInstance(req_gpu)",
+    "MonthlyCost(req_gpu, 45000)"
+  ]
+}

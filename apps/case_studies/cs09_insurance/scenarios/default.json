@@ -1,0 +1,6 @@
+{
+  "facts": [
+    "IncidentType(claim1, water_damage)",
+    "PoliceReportSubmitted(claim1)"
+  ]
+}

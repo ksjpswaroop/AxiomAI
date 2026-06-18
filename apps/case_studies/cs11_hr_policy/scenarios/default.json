@@ -1,0 +1,6 @@
+{
+  "facts": [
+    "FullTimeEmployee(emp1)",
+    "TenureEligible(emp1)"
+  ]
+}

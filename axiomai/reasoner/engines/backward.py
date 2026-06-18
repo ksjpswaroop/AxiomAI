@@ -6,10 +6,11 @@ from __future__ import annotations
 
 import time
 from typing import Optional
-from ..core.models import Fact, Rule, Predicate
+
+from ..core.models import Predicate, Rule
 from ..core.substitution import Substitution
 from ..core.unification import UnificationEngine
-from ..explain.proof import ProofTree, ProofStep, StepType
+from ..explain.proof import ProofStep, ProofTree, StepType
 from ..kb.store import KnowledgeBase
 
 
@@ -162,12 +163,23 @@ class BackwardChainEngine:
         if subst is None:
             return False, proof, Substitution.identity()
 
-        # Prove each antecedent recursively
-        for ant in rule.antecedents:
-            ant_inst = ant.substitute(subst.to_dict())
-            result, proof, _ = self._prove_goal(ant_inst, proof, depth + 1)
-            if result != "PROVED":
+        # Prove antecedents recursively
+        if rule.antecedent_operator == "or":
+            any_proved = False
+            for ant in rule.antecedents:
+                ant_inst = ant.substitute(subst.to_dict())
+                result, proof, _ = self._prove_goal(ant_inst, proof, depth + 1)
+                if result == "PROVED":
+                    any_proved = True
+                    break
+            if not any_proved:
                 return False, proof, Substitution.identity()
+        else:
+            for ant in rule.antecedents:
+                ant_inst = ant.substitute(subst.to_dict())
+                result, proof, _ = self._prove_goal(ant_inst, proof, depth + 1)
+                if result != "PROVED":
+                    return False, proof, Substitution.identity()
 
         # All antecedents proved
         self.step_counter += 1

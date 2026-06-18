@@ -4,16 +4,27 @@ FastAPI routes for AxiomAI Reasoner.
 
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, Field
+import os
 from typing import Optional
-from ..engine import Reasoner, QueryResult
-from ..explain.narrator import Narrator
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+
+from ..engine import Reasoner
 from ..engines.constraints import ConstraintSolver, solve_sudoku
+from ..explain.narrator import Narrator
+from .routes_app import router as app_router
+from .routes_connectors import router as connectors_router
 
-
-app = FastAPI(title="AxiomAI Reasoner", version="0.1.0")
-reasoner = Reasoner()
+app = FastAPI(
+    title="AxiomAI Reasoner",
+    version="0.3.0",
+    description="Deterministic reasoning engine with governance, case studies, and audit APIs.",
+)
+app.include_router(app_router)
+app.include_router(connectors_router, prefix="/connectors")
+_persist = os.environ.get("AXIOMAI_PERSIST")
+reasoner = Reasoner(persist=_persist) if _persist else Reasoner()
 
 
 # ── Request Models ───────────────────────────────────────────────────────────
@@ -57,6 +68,15 @@ class ActionRequest(BaseModel):
     add_effects: list[str]
     del_effects: list[str] = []
     cost: int = 1
+
+
+class SudokuRequest(BaseModel):
+    grid: list[list[int]] | None = None
+
+
+class ExtractRequest(BaseModel):
+    text: str
+    load: bool = True
 
 
 # ── Fact Endpoints ───────────────────────────────────────────────────────────
@@ -134,6 +154,18 @@ def query(req: QueryRequest):
     }
 
 
+@app.post("/extract", tags=["Reasoning"])
+def extract(req: ExtractRequest):
+    """Extract facts and rules from natural language via LLM (or fallback)."""
+    result = reasoner.extract(req.text, load=req.load)
+    return {
+        "facts": [str(f.predicate) for f in result["facts"]],
+        "rules": [str(r) for r in result["rules"]],
+        "stats": result.get("stats", {}),
+        "loaded": req.load,
+    }
+
+
 @app.post("/forward", tags=["Reasoning"])
 def forward_chain():
     """Run forward chaining — derive all possible facts."""
@@ -178,6 +210,53 @@ def check_contradictions():
     }
 
 
+@app.get("/proofs", tags=["Persistence"])
+def list_proofs(
+    query: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """List persisted proof traces (requires AXIOMAI_PERSIST)."""
+    proofs = reasoner.list_proofs(query=query, limit=limit, offset=offset)
+    return {"count": len(proofs), "proofs": proofs}
+
+
+@app.get("/proofs/{proof_id}", tags=["Persistence"])
+def get_proof(proof_id: str):
+    """Fetch a single persisted proof by ID."""
+    proof = reasoner.get_proof(proof_id)
+    if not proof:
+        raise HTTPException(status_code=404, detail=f"Proof not found: {proof_id}")
+    return proof
+
+
+@app.get("/inference-runs", tags=["Persistence"])
+def list_inference_runs(
+    query: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """List persisted inference runs (requires AXIOMAI_PERSIST)."""
+    runs = reasoner.list_inference_runs(query=query, limit=limit, offset=offset)
+    return {"count": len(runs), "runs": runs}
+
+
+@app.get("/inference-runs/{run_id}", tags=["Persistence"])
+def get_inference_run(run_id: str):
+    """Fetch a single persisted inference run by ID."""
+    run = reasoner.get_inference_run(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=f"Inference run not found: {run_id}")
+    return run
+
+
+@app.get("/contradictions/history", tags=["Persistence"])
+def list_contradiction_history(limit: int = 50, offset: int = 0):
+    """List persisted contradiction audit records."""
+    records = reasoner.list_persisted_contradictions(limit=limit, offset=offset)
+    return {"count": len(records), "contradictions": records}
+
+
 # ── Constraint / Planning Endpoints ─────────────────────────────────────────
 
 @app.post("/constraints/solve", tags=["Constraints"])
@@ -196,10 +275,10 @@ def solve_csp(req: CSPSolverRequest):
 
 
 @app.post("/sudoku", tags=["Constraints"])
-def solve_sudoku_endpoint(grid: list[list[int]] = Field(default=None)):
+def solve_sudoku_endpoint(req: SudokuRequest = SudokuRequest()):
     """Solve a Sudoku puzzle. Pass 9x9 grid with 0 = empty."""
+    grid = req.grid
     if grid is None:
-        # Default easy puzzle
         grid = [
             [5, 3, 0, 0, 7, 0, 0, 0, 0],
             [6, 0, 0, 1, 9, 5, 0, 0, 0],
@@ -287,7 +366,7 @@ def stats():
 
 @app.get("/health", tags=["Utility"])
 def health():
-    return {"status": "healthy", "version": "0.1.0"}
+    return {"status": "healthy", "version": "0.3.0"}
 
 
 # ── Run ─────────────────────────────────────────────────────────────────────

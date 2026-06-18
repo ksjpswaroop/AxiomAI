@@ -4,7 +4,7 @@ Constraint Solver — Z3-backed CSP solver.
 
 from __future__ import annotations
 
-from z3 import Solver, Int, sat, unsat, Or, And
+from z3 import And, Int, Or, Solver, sat, unsat
 
 
 class ConstraintSolver:

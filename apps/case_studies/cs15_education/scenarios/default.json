@@ -1,0 +1,6 @@
+{
+  "facts": [
+    "PrerequisiteCompleted(student1, calc1)",
+    "EnrolledIn(student1, calc2)"
+  ]
+}

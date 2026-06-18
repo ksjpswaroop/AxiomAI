@@ -5,10 +5,11 @@ Forward Chaining Engine — Data-driven inference.
 from __future__ import annotations
 
 import time
-from ..core.models import Fact, Rule, Predicate
+
+from ..core.models import Fact, Predicate, Rule
 from ..core.substitution import Substitution
 from ..core.unification import UnificationEngine
-from ..explain.proof import ProofTree, ProofStep, StepType
+from ..explain.proof import ProofStep, ProofTree, StepType
 from ..kb.store import KnowledgeBase
 
 
@@ -48,12 +49,14 @@ class ForwardChainEngine:
         start = time.perf_counter()
 
         proof = ProofTree()
-        working: dict[str, Fact] = {str(f.predicate): f for f in self.kb.list_facts()}
+        working: dict[str, Fact] = {
+            str(f.predicate): f for f in self.kb.list_active_facts()
+        }
         new_facts_found: list[Fact] = []
         all_derived: list[Fact] = list(working.values())
 
         # Record initial facts
-        for f in self.kb.list_facts():
+        for f in self.kb.list_active_facts():
             self.step_counter += 1
             step = ProofStep(
                 step=self.step_counter,
@@ -108,27 +111,42 @@ class ForwardChainEngine:
         if not rule.consequent:
             return []
 
-        # Try to match all antecedents
-        subst = Substitution.identity()
-        matched_facts: list[Fact] = []
+        if rule.antecedent_operator == "or":
+            for ant in rule.antecedents:
+                matched = self._match_antecedent(ant, working, Substitution.identity())
+                if matched is not None:
+                    fact, subst = matched
+                    consequent_pred = rule.consequent.substitute(subst.to_dict())
+                    consequent_fact = Fact.create(
+                        consequent_pred,
+                        source=f"rule:{rule.id}",
+                        confidence_source="derived",
+                    )
+                    return [(consequent_fact, subst)]
+            return []
 
-        for ant in rule.antecedents:
-            matched = self._match_antecedent(ant, working, subst)
-            if matched is None:
-                return []
-            fact, new_subst = matched
-            matched_facts.append(fact)
-            subst = subst.compose(new_subst)
-
-        # Apply substitution to consequent
-        consequent_pred = rule.consequent.substitute(subst.to_dict())
-        consequent_fact = Fact.create(
-            consequent_pred,
-            source=f"rule:{rule.id}",
-            confidence_source="derived",
-        )
-
-        return [(consequent_fact, subst)]
+        # AND antecedents — try each fact as entry point for first antecedent
+        results: list[tuple[Fact, Substitution]] = []
+        for start_fact in working.values():
+            subst = self.unification.match(rule.antecedents[0], start_fact.predicate)
+            if subst is None:
+                continue
+            valid = True
+            for ant in rule.antecedents[1:]:
+                ant_inst = ant.substitute(subst.to_dict())
+                if str(ant_inst) not in working:
+                    valid = False
+                    break
+            if valid and rule.consequent:
+                consequent_pred = rule.consequent.substitute(subst.to_dict())
+                if str(consequent_pred) not in working:
+                    consequent_fact = Fact.create(
+                        consequent_pred,
+                        source=f"rule:{rule.id}",
+                        confidence_source="derived",
+                    )
+                    results.append((consequent_fact, subst))
+        return results
 
     def _match_antecedent(
         self,
@@ -140,6 +158,5 @@ class ForwardChainEngine:
         for fact_pred_str, fact in working.items():
             subst = self.unification.match(antecedent, fact.predicate)
             if subst is not None:
-                composed = current_subst.compose(subst)
                 return fact, subst
         return None

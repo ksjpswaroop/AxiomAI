@@ -36,3 +36,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Case study demo output
+apps/case-studies/*/output/

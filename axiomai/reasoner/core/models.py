@@ -5,8 +5,8 @@ All structured logic objects for the reasoning engine.
 
 from __future__ import annotations
 
-import uuid
 import re
+import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
@@ -42,9 +42,15 @@ class Term:
 
 
 class Predicate:
-    """A predicate expression: Relation(term1, term2, ...)"""
+    """A predicate expression: Relation(term1, term2, ...) or namespace:Relation(...)"""
 
-    def __init__(self, relation: str, terms: list[Union[str, Term]]):
+    def __init__(
+        self,
+        relation: str,
+        terms: list[Union[str, Term]],
+        namespace: str = "default",
+    ):
+        self.namespace = namespace
         self.relation = relation
         self.terms: list[Term] = [
             t if isinstance(t, Term) else self._parse_term(str(t))
@@ -64,8 +70,13 @@ class Predicate:
 
     @classmethod
     def parse(cls, s: str) -> Predicate:
-        """Parse 'Relation(x, y, z)' string into a Predicate."""
+        """Parse 'Relation(x, y)' or 'namespace:Relation(x, y)'."""
         s = s.strip()
+        namespace = "default"
+        if ":" in s.split("(")[0]:
+            ns_part, remainder = s.split(":", 1)
+            namespace = ns_part
+            s = remainder
         match = re.match(r"^(\w+)\((.*)\)$", s)
         if not match:
             raise ValueError(f"Invalid predicate syntax: {s}")
@@ -75,7 +86,7 @@ class Predicate:
             terms: list[str] = []
         else:
             terms = cls._split_terms(terms_str)
-        return cls(rel, terms)
+        return cls(rel, terms, namespace=namespace)
 
     @staticmethod
     def _split_terms(s: str) -> list[str]:
@@ -100,7 +111,10 @@ class Predicate:
 
     def __str__(self) -> str:
         if self._str_cache is None:
-            self._str_cache = f"{self.relation}({', '.join(str(t) for t in self.terms)})"
+            prefix = f"{self.namespace}:" if self.namespace != "default" else ""
+            self._str_cache = (
+                f"{prefix}{self.relation}({', '.join(str(t) for t in self.terms)})"
+            )
         return self._str_cache
 
     def __repr__(self) -> str:
@@ -128,7 +142,7 @@ class Predicate:
                 new_terms.append(Term(substitution[t.name], TermType.CONSTANT))
             else:
                 new_terms.append(t)
-        return Predicate(self.relation, new_terms)
+        return Predicate(self.relation, new_terms, namespace=self.namespace)
 
 
 @dataclass
@@ -146,9 +160,21 @@ class Fact:
 
     @classmethod
     def create(cls, predicate: Union[str, Predicate], **kwargs) -> Fact:
+        negated = False
         if isinstance(predicate, str):
-            predicate = Predicate.parse(predicate)
-        return cls(predicate=predicate, **kwargs)
+            s = predicate.strip()
+            if s.startswith("¬") or s.upper().startswith("NOT "):
+                negated = True
+                s = s.lstrip("¬").strip()
+                if s.upper().startswith("NOT "):
+                    s = s[4:].strip()
+                predicate = Predicate.parse(s)
+            else:
+                predicate = Predicate.parse(s)
+        metadata = kwargs.pop("metadata", {})
+        if negated:
+            metadata = {**metadata, "negated": True}
+        return cls(predicate=predicate, metadata=metadata, **kwargs)
 
     def is_valid_at(self, dt: Optional[datetime] = None) -> bool:
         if self.valid_from is None and self.valid_to is None:
@@ -184,6 +210,7 @@ class Rule:
     id: str = field(default_factory=lambda: str(uuid.uuid4()))
     antecedents: list[Predicate] = field(default_factory=list)
     consequent: Optional[Predicate] = None
+    antecedent_operator: str = "and"  # "and" or "or"
     priority: int = 1
     author: Optional[str] = None
     domain: Optional[str] = None
@@ -197,22 +224,39 @@ class Rule:
     def parse(cls, rule_str: str, priority: int = 1, **kwargs) -> Rule:
         """Parse 'IF Human(x) THEN Mortal(x)' or 'Human(x) -> Mortal(x)'."""
         rule_str = rule_str.strip()
+        antecedent_operator = "and"
 
         if_match = re.match(r"IF\s+(.+?)\s+THEN\s+(.+)$", rule_str, re.IGNORECASE)
         if if_match:
-            ant_strs = [a.strip() for a in re.split(r"\s+AND\s+", if_match.group(1))]
+            ant_part = if_match.group(1).strip()
             cons_str = if_match.group(2).strip()
+            if re.search(r"\s+OR\s+", ant_part, re.IGNORECASE):
+                antecedent_operator = "or"
+                ant_strs = [a.strip() for a in re.split(r"\s+OR\s+", ant_part, flags=re.IGNORECASE)]
+            else:
+                ant_strs = [a.strip() for a in re.split(r"\s+AND\s+", ant_part, flags=re.IGNORECASE)]
         else:
             arrow_match = re.match(r"^(.+?)\s*->\s*(.+)$", rule_str)
             if not arrow_match:
                 raise ValueError(f"Invalid rule syntax: {rule_str}")
-            ant_strs = [a.strip() for a in arrow_match.group(1).split(" AND ")]
+            ant_part = arrow_match.group(1).strip()
             cons_str = arrow_match.group(2).strip()
+            if re.search(r"\s+OR\s+", ant_part, re.IGNORECASE):
+                antecedent_operator = "or"
+                ant_strs = [a.strip() for a in re.split(r"\s+OR\s+", ant_part, flags=re.IGNORECASE)]
+            else:
+                ant_strs = [a.strip() for a in ant_part.split(" AND ")]
 
         antecedents = [Predicate.parse(a) for a in ant_strs]
         consequent = Predicate.parse(cons_str)
 
-        return cls(antecedents=antecedents, consequent=consequent, priority=priority, **kwargs)
+        return cls(
+            antecedents=antecedents,
+            consequent=consequent,
+            antecedent_operator=antecedent_operator,
+            priority=priority,
+            **kwargs,
+        )
 
     def __str__(self) -> str:
         ants = " AND ".join(str(a) for a in self.antecedents)
