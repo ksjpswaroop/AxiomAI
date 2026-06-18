@@ -1,0 +1,7 @@
+{
+  "facts": [
+    "AuthFailureIncreased(vpn1)",
+    "CertificateExpired(vpn1)",
+    "VpnServiceRunning(vpn1)"
+  ]
+}

@@ -23,13 +23,16 @@ axiomai socrates
 
 Expected: `PROVED: Mortal(Socrates)`
 
-## 3. Run Tier 1 case study demos
+## 3. Run case study demos
 
+Tier 1 (pilot):
 ```bash
 python apps/case-studies/07-cybersecurity/demo.py
 python apps/case-studies/02-soc2-compliance/demo.py
 python apps/case-studies/03-ai-support-governance/demo.py
 ```
+
+All 18 verticals are available via API (`GET /case-studies`) or the Streamlit console.
 
 ## 4. Start the API
 

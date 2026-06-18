@@ -1,0 +1,7 @@
+{
+  "facts": [
+    "PurchaseAmount(req1, 45000)",
+    "NewVendor(req1, NewCloudProvider)",
+    "GpuResource(req1)"
+  ]
+}

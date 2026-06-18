@@ -1,0 +1,8 @@
+{
+  "facts": [
+    "PhysicalTherapyDone(patient1)",
+    "PainOver6Weeks(patient1)",
+    "XrayCompleted(patient1)",
+    "SeverityHigh(patient1)"
+  ]
+}

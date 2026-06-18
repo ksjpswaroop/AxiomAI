@@ -7,6 +7,7 @@ import streamlit as st
 from apps.console.api_client import ApiClient
 
 st.header("Case Study Launcher")
+st.caption("All 18 vertical demos — Tier 1 through Tier 5")
 
 client = ApiClient()
 
@@ -59,10 +60,18 @@ if "last_cs_result" in st.session_state:
 
     elif result.get("case_study_id") == "cs-03":
         decision = result.get("decision", {})
-        st.metric("Decision", decision.get("outcome", ""))
-        st.write(decision.get("explanation", ""))
+        st.metric("Decision", result.get("outcome") or decision.get("outcome", ""))
+        st.write(decision.get("explanation", result.get("explanation", "")))
         with st.expander("Proof"):
-            st.json(decision.get("proof"))
+            st.json(decision.get("proof") or result.get("proofs"))
+
+    else:
+        st.metric("Outcome", result.get("outcome", ""))
+        if result.get("explanation"):
+            st.write(result["explanation"])
+        if result.get("conclusions"):
+            for c in result["conclusions"]:
+                st.write(f"- {c}")
 
     with st.expander("Raw JSON"):
         st.json(result)

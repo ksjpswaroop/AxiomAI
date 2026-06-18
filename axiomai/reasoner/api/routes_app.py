@@ -45,6 +45,19 @@ def run_case_study_endpoint(case_study_id: str):
             action=result.get("action", {}),
             case_study=case_study_id,
         )
+    elif result.get("outcome") in ("DENY", "BLOCKED", "ESCALATE"):
+        from axiomai.governance import Decision
+
+        audit_store.record(
+            Decision(
+                outcome="DENY" if result["outcome"] == "BLOCKED" else result["outcome"],
+                explanation=result.get("explanation", ""),
+                violated_rules=result.get("conclusions", []),
+                proof=result.get("proofs", [None])[0] if result.get("proofs") else None,
+            ),
+            action={"case_study_run": case_study_id},
+            case_study=case_study_id,
+        )
     return result
 
 

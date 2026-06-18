@@ -24,7 +24,10 @@ def test_list_case_studies():
     assert r.status_code == 200
     data = r.json()
     ids = {item["id"] for item in data}
-    assert ids == {"cs-07", "cs-02", "cs-03"}
+    assert "cs-07" in ids
+    assert "cs-02" in ids
+    assert "cs-03" in ids
+    assert len(data) == 18
 
 
 def test_run_case_study_cs07():
@@ -51,8 +54,16 @@ def test_run_case_study_cs03():
     assert r.status_code == 200
     body = r.json()
     assert body["case_study_id"] == "cs-03"
-    assert body["decision"]["outcome"] == "DENY"
+    assert body["outcome"] == "DENY"
     assert body["decision"]["proof"] is not None
+
+
+def test_run_case_study_cs01():
+    r = client.post("/case-studies/cs-01/run")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["case_study_id"] == "cs-01"
+    assert body["outcome"] in ("ROOT_CAUSE_FOUND", "PROVED")
 
 
 def test_run_unknown_case_study():

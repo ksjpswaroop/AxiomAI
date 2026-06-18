@@ -1,0 +1,6 @@
+{
+  "facts": [
+    "UptimePercent(contract1, 99.2)",
+    "EnterpriseTier(contract1)"
+  ]
+}

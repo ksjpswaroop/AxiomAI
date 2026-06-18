@@ -33,13 +33,13 @@ Use this document as the single source of truth for build progress. Update check
 | P3 | Application Framework | 10/10 ✅ | None |
 | P4 | Tier 1 Case Studies | 3/3 ✅ | None |
 | P5 | Working Application | 12/12 ✅ | None |
-| P6 | Tier 2–5 Case Studies | 0/15 verticals | Depends on P5 |
+| P6 | Tier 2–5 Case Studies | 15/15 ✅ | None |
 
-**Overall:** P0–P5 complete. 140 tests passing. Docker Compose ready. v0.3.0. Next: P6 remaining case studies.
+**Overall:** P0–P6 complete. 187 tests passing. All 18 case studies runnable. v0.3.0.
 
-**Active branch:** `cursor/p5-working-application-ef4a`
+**Active branch:** `cursor/p6-case-studies-ef4a`
 
-**Recommended next:** P6 — Tier 2 case studies (MSP, Procurement, Data Gov, Cloud Cost)
+**Recommended next:** Production hardening, PyPI publish, customer pilots
 
 ---
 
@@ -274,36 +274,38 @@ Use this document as the single source of truth for build progress. Update check
 
 | ID | Case Study | Slug | Key Tasks | Status |
 |----|-----------|------|-----------|--------|
-| CS01 | MSP Network Operations | `01-msp-network` | Topology rules, alert correlation, MTTR demo | [ ] |
-| CS06 | Procurement Agent Governance | `06-procurement-agent` | Spend limits, vendor rules, governance middleware | [ ] |
-| CS12 | Data Governance / Access Control | `12-data-governance` | HIPAA/SOC2 access rules, PII detection facts | [ ] |
-| CS13 | Cloud Cost Governance | `13-cloud-cost` | Budget constraints, resource policy rules | [ ] |
+| CS01 | MSP Network Operations | `01-msp-network` | Topology rules, alert correlation, MTTR demo | [x] |
+| CS06 | Procurement Agent Governance | `06-procurement-agent` | Spend limits, vendor rules, governance middleware | [x] |
+| CS12 | Data Governance / Access Control | `12-data-governance` | HIPAA/SOC2 access rules, PII detection facts | [x] |
+| CS13 | Cloud Cost Governance | `13-cloud-cost` | Budget constraints, resource policy rules | [x] |
 
 ### Tier 3 — Vertical Products
 
 | ID | Case Study | Slug | Key Tasks | Status |
 |----|-----------|------|-----------|--------|
-| CS04 | Healthcare Prior Auth | `04-healthcare-prior-auth` | Clinical criteria rules, guideline facts | [ ] |
-| CS08 | Contract / SLA Analysis | `08-contract-analysis` | Obligation rules, deadline tracking | [ ] |
-| CS09 | Insurance Claims | `09-insurance-claims` | Coverage rules, claim validation | [ ] |
-| CS10 | Banking Loan Eligibility | `10-banking-loan` | Underwriting rules, regulatory constraints | [ ] |
+| CS04 | Healthcare Prior Auth | `04-healthcare-prior-auth` | Clinical criteria rules, guideline facts | [x] |
+| CS08 | Contract / SLA Analysis | `08-contract-analysis` | Obligation rules, deadline tracking | [x] |
+| CS09 | Insurance Claims | `09-insurance-claims` | Coverage rules, claim validation | [x] |
+| CS10 | Banking Loan Eligibility | `10-banking-loan` | Underwriting rules, regulatory constraints | [x] |
 
 ### Tier 4 — Niche / High Margin
 
 | ID | Case Study | Slug | Key Tasks | Status |
 |----|-----------|------|-----------|--------|
-| CS11 | HR Policy Engine | `11-hr-policy` | Benefits eligibility rules | [ ] |
-| CS14 | Manufacturing QC | `14-manufacturing-qc` | Defect classification rules | [ ] |
-| CS15 | Education Degree Audit | `15-education-degree` | Transcript validation rules | [ ] |
-| CS16 | Immigration Assistant | `16-immigration` | Checklist rules, document requirements | [ ] |
-| CS17 | Sales Qualification | `17-sales-qualification` | ICP matching rules | [ ] |
+| CS11 | HR Policy Engine | `11-hr-policy` | Benefits eligibility rules | [x] |
+| CS14 | Manufacturing QC | `14-manufacturing-qc` | Defect classification rules | [x] |
+| CS15 | Education Degree Audit | `15-education-degree` | Transcript validation rules | [x] |
+| CS16 | Immigration Assistant | `16-immigration` | Checklist rules, document requirements | [x] |
+| CS17 | Sales Qualification | `17-sales-qualification` | ICP matching rules | [x] |
 
 ### Tier 5 — Future / Complex
 
 | ID | Case Study | Slug | Key Tasks | Status |
 |----|-----------|------|-----------|--------|
-| CS05 | AI Code Review Guardrail | `05-ai-code-review` | Security pattern rules, architecture constraints | [ ] |
-| CS18 | Agentic Trading Guardrail | `18-agentic-trading` | Position limits, regulatory rules | [ ] |
+| CS05 | AI Code Review Guardrail | `05-ai-code-review` | Security pattern rules, architecture constraints | [x] |
+| CS18 | Agentic Trading Guardrail | `18-agentic-trading` | Position limits, regulatory rules | [x] |
+
+**P6 Exit Criteria:** All 15 remaining verticals implemented with demo + tests + API registration. ✅ Met (18/18 total).
 
 ### Per-Case-Study Task Template
 
@@ -333,9 +335,9 @@ M3: P4 complete ────────────► 3 Tier 1 vertical demos 
          │
 M4: P5 complete ────────────► Working application (Docker + UI)  ✅
          │
-M5: P6 Tier 2 ──────────────► 4 additional verticals  ← CURRENT TARGET
+M5: P6 Tier 2 ──────────────► 4 additional verticals  ✅
          │
-M6: P6 Tier 3–5 ────────────► All 18 case studies implemented
+M6: P6 Tier 3–5 ────────────► All 18 case studies implemented  ✅
 ```
 
 ---
@@ -374,7 +376,8 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 | Date | Phase | Update |
 |------|-------|--------|
-| 2026-06-17 | P2 | Platform layer: 85 tests, SQLite persistence, CI, v0.3.0 |
+| 2026-06-18 | P6 | All 15 remaining case studies — 18/18 verticals, 187 tests |
+| 2026-06-17 | P5 | Working app — API extensions, Streamlit console, Docker Compose |
 | 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining, KB keys |
 | 2026-06-17 | — | PR #3 merged to master: module docs + tracker (docs only) |
 | 2026-06-17 | — | Tracker v1.0 created. Engine ~85% alpha. 18 case study specs exist. |
