@@ -1,8 +1,8 @@
 # AxiomAI — Implementation Tracker
 
-**Version:** 1.1  
+**Version:** 1.2  
 **Date:** 2026-06-17  
-**Last Updated:** 2026-06-17 (P0 complete, PR #4 open)  
+**Last Updated:** 2026-06-18 (Production Readiness audit tracked)  
 **Companion doc:** [PROJECT-MODULES.md](./PROJECT-MODULES.md)
 
 Use this document as the single source of truth for build progress. Update checkboxes as work completes.
@@ -13,7 +13,8 @@ Use this document as the single source of truth for build progress. Update check
 
 1. Work **top to bottom within each phase** unless a dependency note says otherwise.
 2. Do not start **Phase 4 (case studies)** until **Phase 0–2** are complete.
-3. Mark items: `[ ]` not started · `[~]` in progress · `[x]` done · `[—]` cancelled/deferred
+3. Do not expose the API publicly until **Phase PR-1** is complete.
+4. Mark items: `[ ]` not started · `[~]` in progress · `[x]` done · `[—]` cancelled/deferred
 4. Each task has an **ID** (e.g. `P0-03`) for issue/PR linking.
 5. **Definition of Done (DoD)** for every task:
    - Code merged to `master`
@@ -34,14 +35,17 @@ Use this document as the single source of truth for build progress. Update check
 | P4 | Tier 1 Case Studies | 3/3 ✅ | None |
 | P5 | Working Application | 12/12 ✅ | None |
 | P6 | Tier 2–5 Case Studies | 15/15 ✅ | None |
+| PR | Production Readiness | 0/42 | Security (no API auth) |
 
-**Overall:** P0–P6 complete. 259 tests passing. 18 investor-ready case studies with scenarios. v0.3.0.
+**Overall:** P0–P6 complete. **281 tests passing**, ~79% coverage on `axiomai/`. 18 investor-ready case studies with scenarios. v0.3.0 (Alpha).
+
+**Deployment verdict:** ✅ Demo / private pilot · ❌ Public internet / multi-tenant production (see [Phase PR](#phase-pr--production-readiness))
 
 **Active branch:** `cursor/investor-demo-ui-ef4a`
 
 **Investor demo:** `docker compose up` → http://localhost:8501 — Case Study Gallery (18), Brainstorming, Feature Guides, KB, Governance, Audit
 
-**Recommended next:** Production hardening, PyPI publish, customer pilots
+**Recommended next:** Phase PR-1 (auth + dangerous endpoint gating) → private pilot customers
 
 ---
 
@@ -349,7 +353,132 @@ M4: P5 complete ────────────► Working application (Doc
 M5: P6 Tier 2 ──────────────► 4 additional verticals  ✅
          │
 M6: P6 Tier 3–5 ────────────► All 18 case studies implemented  ✅
+         │
+M7: PR complete ────────────► Production-ready for managed SaaS
 ```
+
+---
+
+## Phase PR — Production Readiness
+
+> **Goal:** Harden the platform for internet-facing, multi-tenant, or regulated production deployments.  
+> **Audit date:** 2026-06-18 · **Verdict:** Strong demo/pilot; not production-ready without PR phase.  
+> **Work top to bottom** — PR-1 blockers must ship before PR-2+.
+
+### Deployment Tiers (what works today)
+
+| Tier | Use case | Ready? | Minimum requirements |
+|------|----------|--------|----------------------|
+| **Demo** | Investor meetings, local laptop | ✅ Yes | `docker compose up` on localhost |
+| **Private pilot** | 1–3 design partners on VPN | ⚠️ Mostly | VPN + PR-1 complete |
+| **Embedded** | Reasoner inside customer's app | ✅ Core yes | Customer owns auth/network; use as library |
+| **Managed SaaS** | Public multi-tenant product | ❌ No | PR-1 through PR-3 |
+| **Regulated** | HIPAA/SOC2-hosted service | ❌ No | PR-1 through PR-4 + pen test |
+
+### What's Already Production-Grade
+
+| Area | Evidence |
+|------|----------|
+| Core reasoning engine | 6 inference modes, proof traces, contradiction detection; `tests/test_determinism.py` |
+| Test & CI gate | 281 tests, ≥75% coverage on `axiomai/`; `.github/workflows/ci.yml` |
+| Containerized demo | `Dockerfile`, `docker-compose.yml`, API healthcheck |
+| SQLite persistence | `AXIOMAI_PERSIST`, proofs/runs/contradictions query API |
+| Governance framework | 4 policy packs, middleware, audit log (`AXIOMAI_AUDIT_PERSIST` supported) |
+| Secrets hygiene | `.env` gitignored; LLM keys from env only |
+| Investor application | 18 case studies, Streamlit console, brainstorming, guides |
+
+---
+
+### PR-1 — Block Exposure (Critical Blockers)
+
+> **Priority:** CRITICAL — do not expose API publicly until PR-1 is complete.
+
+| ID | Task | Module | Status | Acceptance Criteria |
+|----|------|--------|--------|---------------------|
+| PR-01 | API authentication (API key or OAuth2 bearer) on all routes | `axiomai/reasoner/api/` | [ ] | Unauthenticated requests return 401; tests cover auth |
+| PR-02 | Role-based access: read-only vs admin scopes | API middleware | [ ] | Mutating routes require admin scope |
+| PR-03 | Gate `POST /reset` behind `AXIOMAI_DEV_MODE=true` or remove in prod | `main.py` | [ ] | `/reset` returns 404/403 when dev mode off |
+| PR-04 | Gate `DELETE /audit` behind dev mode or admin-only | `routes_app.py` | [ ] | Audit log cannot be cleared in production |
+| PR-05 | Remove or restrict `POST /connectors/file/ingest` arbitrary path read | `routes_connectors.py` | [ ] | Allowlist directory only; path traversal blocked; security tests |
+| PR-06 | Replace `eval()` in constraint solver with safe expression parser | `engines/constraints.py` | [ ] | `POST /constraints/solve` rejects unsafe input; no RCE |
+| PR-07 | Document private-network-only deployment until PR-01 ships | `docs/DEPLOYMENT.md` | [ ] | Warning banner + VPN requirement stated |
+| PR-08 | Add `.env.example` with all supported env vars | repo root | [ ] | `AXIOMAI_PERSIST`, `AXIOMAI_AUDIT_PERSIST`, `OPENAI_API_KEY`, `AXIOMAI_DEV_MODE`, auth vars |
+
+**PR-1 Exit Criteria:** API requires auth; dangerous endpoints gated; file ingest restricted; constraints safe. ✅ Required before any public exposure.
+
+---
+
+### PR-2 — Security Core (High Priority)
+
+| ID | Task | Module | Status | Acceptance Criteria |
+|----|------|--------|--------|---------------------|
+| PR-09 | TLS termination sample config (nginx or Caddy) | `deploy/` or `docs/DEPLOYMENT.md` | [ ] | Copy-paste config terminates HTTPS → API/UI |
+| PR-10 | CORS allowlist middleware | `main.py` | [ ] | Configurable origins; default deny |
+| PR-11 | Rate limiting on expensive endpoints | API middleware | [ ] | `/query`, `/forward`, `/extract` throttled |
+| PR-12 | Streamlit console behind auth (OAuth proxy or built-in) | `apps/console/` | [ ] | Unauthenticated users cannot reach UI |
+| PR-13 | Lock console API URL to configured host (prevent SSRF) | `apps/console/app.py` | [ ] | Sidebar cannot point httpx at arbitrary hosts |
+| PR-14 | Protect `/docs` and `/openapi.json` in production | `main.py` | [ ] | Disabled or auth-gated when `AXIOMAI_DEV_MODE` off |
+| PR-15 | Webhook HMAC signature validation | `routes_connectors.py` | [ ] | `POST /connectors/webhook/facts` rejects unsigned payloads |
+| PR-16 | Pin dependencies (lock file) | `pyproject.toml` + lock | [ ] | Reproducible installs; CI uses lock file |
+| PR-17 | Docker non-root user | `Dockerfile` | [ ] | Container runs as unprivileged UID |
+| PR-18 | LLM call guards: timeout, retry limit, token budget | `llm_client.py` | [ ] | Hung/expensive LLM calls fail fast |
+| PR-19 | PII / prompt-injection filtering on `POST /extract` | `llm_extractor.py` | [ ] | Documented limits; oversized input rejected |
+| PR-20 | Security scanning in CI (Bandit + Trivy or equivalent) | `.github/workflows/` | [ ] | CI fails on critical CVEs / high-severity findings |
+
+**PR-2 Exit Criteria:** HTTPS deployable; abuse-resistant API; hardened LLM and connector surfaces.
+
+---
+
+### PR-3 — Operations & Observability (High Priority)
+
+| ID | Task | Module | Status | Acceptance Criteria |
+|----|------|--------|--------|---------------------|
+| PR-21 | Structured logging (JSON) with request correlation IDs | `axiomai/` | [ ] | Every API request logged with `request_id` |
+| PR-22 | Prometheus `/metrics` endpoint | API | [ ] | Request count, latency, error rate exposed |
+| PR-23 | Deep health check (`/health` verifies DB + disk) | `main.py` | [ ] | Unhealthy when SQLite unreachable or disk full |
+| PR-24 | Set `AXIOMAI_AUDIT_PERSIST` in `docker-compose.yml` | `docker-compose.yml` | [ ] | Governance audit survives container restart |
+| PR-25 | SQLite backup script + restore procedure | `scripts/` + docs | [ ] | Documented one-command backup of `/data` volume |
+| PR-26 | Alembic (or equivalent) schema migrations | `axiomai/reasoner/kb/` | [ ] | Schema changes versioned; upgrade path documented |
+| PR-27 | PostgreSQL backend (or document SQLite single-node limit) | `kb/persistence.py` | [ ] | Multi-instance API supported OR limitation explicit in docs |
+| PR-28 | Audit store file locking / atomic writes | `audit_store.py` | [ ] | Concurrent writes do not corrupt audit JSON |
+| PR-29 | Graceful shutdown / lifespan hooks | `main.py` | [ ] | In-flight requests complete; DB connections closed |
+| PR-30 | Compose: `restart` policy + resource limits | `docker-compose.yml` | [ ] | Services auto-restart; memory/CPU capped |
+| PR-31 | Production runbook (incident, rollback, backup) | `docs/runbooks/` | [ ] | On-call can restore from backup in <30 min |
+| PR-32 | Update `DEPLOYMENT.md` — all env vars, all endpoints | `docs/DEPLOYMENT.md` | [ ] | Matches live API (brainstorm, scenarios, connectors) |
+
+**PR-3 Exit Criteria:** Observable, backupable, operable single-node deployment with persistent audit.
+
+---
+
+### PR-4 — Scale, Tenancy & Release (Medium Priority)
+
+| ID | Task | Module | Status | Acceptance Criteria |
+|----|------|--------|--------|---------------------|
+| PR-33 | Per-tenant KB namespace / isolation | `Reasoner`, API | [ ] | Tenants cannot read or mutate each other's facts |
+| PR-34 | API versioning (`/v1/` prefix) | API routes | [ ] | Breaking changes ship under new version |
+| PR-35 | Custom policy pack registration via API | `governance/` | [ ] | Customers load YAML without code deploy |
+| PR-36 | Real connector credentials (Azure AD, AWS, SIEM) | `axiomai/connectors/` | [ ] | At least one non-mock connector with secret management |
+| PR-37 | CD pipeline — image publish + tagged releases | `.github/workflows/` | [ ] | `v*` tag triggers image push to registry |
+| PR-38 | Gunicorn / multi-worker deployment guide | `docs/DEPLOYMENT.md` | [ ] | Document worker count for CPU-bound inference |
+| PR-39 | Load tests (locust or k6) in CI or nightly | `tests/load/` | [ ] | Baseline latency/throughput documented |
+| PR-40 | Security test suite (auth bypass, path abuse, injection) | `tests/security/` | [ ] | CI runs security tests on every PR |
+| PR-41 | Include `apps/` in coverage or dedicated integration tests | `pyproject.toml`, tests | [ ] | Case study runners and console paths tested |
+| PR-42 | Bump classifier to Beta; PyPI publish workflow | `pyproject.toml`, CI | [ ] | `pip install axiomai` from PyPI with pinned release |
+
+**PR-4 Exit Criteria:** Multi-tenant ready; release automation; load and security baselines established.
+
+---
+
+### PR Readiness Grades (current)
+
+| Layer | Grade | Notes |
+|-------|-------|-------|
+| Reasoning engine | **A** | Tested, deterministic, feature-complete |
+| Governance framework | **B+** | Works; audit persistence and custom policies need ops work |
+| Case studies / console | **A-** | Investor-ready; Streamlit is MVP by design |
+| API security | **F** | No auth; dangerous endpoints exposed |
+| DevOps / SRE | **D** | CI yes; CD, observability, backups no |
+| Operator documentation | **C** | Good dev docs; weak production runbooks |
 
 ---
 
@@ -366,6 +495,10 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 | CS04,08,09,10-* | Tier 2 complete |
 | CS11,14,15,16,17-* | Tier 3 complete |
 | CS05,18-* | Tier 4 complete |
+| PR-1-* | P5-* (working app exists) |
+| PR-2-* | PR-1-* |
+| PR-3-* | PR-1-* |
+| PR-4-* | PR-2-*, PR-3-* |
 
 ---
 
@@ -375,11 +508,18 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 |------|--------|--------|------------|
 | Import path bugs block all development | High | ✅ Resolved | P0 complete (PR #4) |
 | Invalid PyPI deps block install | High | ✅ Resolved | Removed `unification>=0.4.2`, `kanren` |
+| **No API authentication** | **Critical** | **Open** | PR-01, PR-02; block public exposure until done |
+| **Dangerous endpoints exposed (`/reset`, file ingest, `eval`)** | **Critical** | **Open** | PR-03–PR-06 |
+| **Single global KB — no tenant isolation** | **High** | **Open** | PR-33; document single-tenant limit until then |
 | Resolution engine too complex for MVP | Medium | Open | Ship with backward chaining; resolution as beta |
-| Case studies scope creep | High | Open | Strict 6-task template per vertical |
-| Connector integrations need real credentials | Medium | Open | Mock connectors with synthetic data first |
-| No frontend expertise | Medium | Open | Streamlit MVP before React |
-| Determinism regressions | High | Open | `test_determinism.py` in CI (P2-08) |
+| Case studies scope creep | High | ✅ Mitigated | 18/18 complete with JSON scenario template |
+| Connector integrations need real credentials | Medium | Open | Mock connectors first; PR-36 for production |
+| No frontend expertise | Medium | ✅ Mitigated | Streamlit MVP shipped; React deferred to PR-4+ |
+| Determinism regressions | High | ✅ Mitigated | `test_determinism.py` in CI (P2-08) |
+| Audit log not persisted in default compose | Medium | Open | PR-24 |
+| PostgreSQL documented but not implemented | Medium | Open | PR-27 |
+| Unpinned dependencies | Medium | Open | PR-16 |
+| No production runbooks | Medium | Open | PR-31 |
 
 ---
 
@@ -387,9 +527,10 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 | Date | Phase | Update |
 |------|-------|--------|
+| 2026-06-18 | PR | Production Readiness audit — 42 tracked tasks (PR-01–PR-42), deployment tiers, readiness grades |
 | 2026-06-18 | Investor | 18 case studies with JSON scenarios, investor console, brainstorming, guides |
 | 2026-06-18 | Platform | Full verification — all 9 former "Not Implemented" items complete |
-| 2026-06-18 | P6 | All 15 remaining case studies — 18/18 verticals, 259 tests |
+| 2026-06-18 | P6 | All 15 remaining case studies — 18/18 verticals, 281 tests |
 | 2026-06-17 | P5 | Working app — API extensions, Streamlit console, Docker Compose |
 | 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining, KB keys |
 | 2026-06-17 | — | PR #3 merged to master: module docs + tracker (docs only) |
@@ -417,7 +558,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 - Root `README.md`, `LICENSE`, corrected doc paths
 - Full resolution engine (SOS, subsumption, factorization, Z3 fallback)
 - Persistent storage (SQLite facts/rules/proofs/runs/contradictions + query API)
-- Test suite with coverage enforcement (≥75% on core, 259+ tests)
+- Test suite with coverage enforcement (≥75% on core, **281 tests**, ~79% coverage)
 - LLM integration on Reasoner facade (`LLMClient`, `/extract`, CLI)
 - Agent governance framework (`AgentGovernanceMiddleware`, multi-policy, persistent audit)
 - Connector SDK + REST API (`/connectors/webhook/facts`, `/connectors/file/ingest`)
@@ -425,13 +566,19 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 - All 18 case study applications (registry + API + tests)
 - CI/CD pipeline (ruff + pytest + coverage + mypy + Docker build)
 
-### Partially Implemented
+### Partially Implemented (production gaps)
 
-_None._
+- **API security** — no authentication; `/reset`, `DELETE /audit`, file ingest, and `eval()` constraints exposed (see PR-01–PR-06)
+- **Operations** — no structured logging, metrics, backups, or runbooks (see PR-21–PR-31)
+- **Multi-tenancy** — single global `Reasoner` per process (see PR-33)
+- **PostgreSQL** — documented in PROJECT-MODULES but not implemented (see PR-27)
+- **CD / releases** — CI only; no image publish or PyPI workflow (see PR-37, PR-42)
+- **Real connectors** — Azure/AWS/SIEM are mocks (see PR-36)
+- **Operator docs** — `DEPLOYMENT.md` stale vs live API; no `.env.example` (see PR-08, PR-32)
 
-### Not Implemented
+### Not Implemented (production readiness — Phase PR)
 
-_None — all platform items verified complete (see `tests/test_platform_complete.py`)._
+All 42 tasks in [Phase PR](#phase-pr--production-readiness) (PR-01 through PR-42). Feature development (P0–P6) is complete; production hardening is not.
 
 ---
 
@@ -443,4 +590,6 @@ _None — all platform items verified complete (see `tests/test_platform_complet
 | [PRD.md](../PRD.md) | Product requirements |
 | [MASTER-BUSINESS-STRATEGY.md](./business/MASTER-BUSINESS-STRATEGY.md) | GTM and case study priority |
 | [docs/case-studies/](./case-studies/) | Per-vertical specifications |
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Docker deployment (demo); production hardening in Phase PR |
+| [guides/FEATURES.md](./guides/FEATURES.md) | Platform feature guide for pilots |
 | [API.md](./API.md) | REST API reference |
