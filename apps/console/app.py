@@ -34,8 +34,8 @@ st.markdown(
 Use the sidebar pages to:
 
 - **Knowledge Base** — add facts and rules, run queries with proof viewer
-- **Case Studies** — launch Tier 1 demos (CS-07, CS-02, CS-03)
-- **Governance** — simulate agent actions and see ALLOW/DENY/ESCALATE
+- **Case Studies** — launch all 18 vertical demos (Tier 1–5)
+- **Governance** — simulate agent actions across policy packs (ALLOW/DENY/ESCALATE)
 - **Audit Trail** — browse governance decision log
 
 **Stack:** Streamlit UI + FastAPI backend + SQLite persistence (optional).

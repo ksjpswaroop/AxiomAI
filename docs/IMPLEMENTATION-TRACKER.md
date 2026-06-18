@@ -150,6 +150,7 @@ Use this document as the single source of truth for build progress. Update check
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
 | P2-14 | GitHub Actions: lint (ruff) + test (pytest) | [x] | CI green on PR |
+| P2-14b | Docker build + health check in CI | [x] | `docker build` job in workflow |
 | P2-15 | `mypy` type checking on core modules | [x] | No errors on engine facade |
 | P2-16 | Version bump to 0.3.0 after P2 complete | [x] | Published to PyPI (optional) |
 
@@ -181,6 +182,7 @@ Use this document as the single source of truth for build progress. Update check
 | P3-07 | `FileConnector` — ingest facts from CSV/JSON | [x] | Used by all demos |
 | P3-08 | `WebhookConnector` — receive facts via HTTP POST | [x] | Used by API integrations |
 | P3-09 | Mock connectors for Azure AD, AWS, SIEM (synthetic data) | [x] | Enable offline demos |
+| P3-09b | Connector REST API (`/connectors/webhook/facts`, `/connectors/file/ingest`) | [x] | Webhook + file ingest endpoints |
 
 ### P3c — Shared Case Study Utilities
 
@@ -383,6 +385,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 | Date | Phase | Update |
 |------|-------|--------|
+| 2026-06-18 | Platform | Full verification — all 9 former "Not Implemented" items complete |
 | 2026-06-18 | P6 | All 15 remaining case studies — 18/18 verticals, 187 tests |
 | 2026-06-17 | P5 | Working app — API extensions, Streamlit console, Docker Compose |
 | 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining, KB keys |
@@ -414,18 +417,18 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 - Test suite with coverage enforcement (≥75% on core, 229+ tests)
 - LLM integration on Reasoner facade (`LLMClient`, `/extract`, CLI)
 - Agent governance framework (`AgentGovernanceMiddleware`, multi-policy, persistent audit)
+- Connector SDK + REST API (`/connectors/webhook/facts`, `/connectors/file/ingest`)
+- Web UI — Streamlit console (KB, 18 case studies, governance, audit) + Docker Compose
+- All 18 case study applications (registry + API + tests)
+- CI/CD pipeline (ruff + pytest + coverage + mypy + Docker build)
 
 ### Partially Implemented
 
-_None — all tracked platform items complete._
+_None._
 
 ### Not Implemented
 
-- Web UI (Streamlit console exists; full product UI pending)
-- Connectors
-- Web UI
-- All 18 case study applications
-- CI/CD pipeline
+_None — all platform items verified complete (see `tests/test_platform_complete.py`)._
 
 ---
 

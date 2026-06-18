@@ -15,7 +15,7 @@ AxiomAI is a **deterministic reasoning engine** positioned as the trust layer fo
 |-------|---------|--------|
 | **L0 — Core Engine** | Logic, inference, proofs, KB | ~90% implemented (alpha, P0 verified) |
 | **L1 — Platform** | CLI, REST API, persistence, tests | ~65% implemented (CLI/API done; tests/CI pending) |
-| **L2 — Application Framework** | Agent governance, connectors, UI shell | Not started |
+| **L2 — Application Framework** | Agent governance, connectors, UI shell | ✅ Complete |
 | **L3 — Vertical Case Studies** | 18 domain-specific products | Specs only (0% code) |
 
 **Core principle:** LLM translates. AxiomAI proves.
@@ -80,13 +80,13 @@ User / Agent Query ────────────────────�
 | M9 | Reasoner Facade | L0 | `axiomai/reasoner/engine.py` | ✅ Done |
 | M10 | REST API | L1 | `axiomai/reasoner/api/main.py` | ✅ Done |
 | M11 | CLI | L1 | `axiomai/reasoner/cli.py` | ✅ Done |
-| M12 | Persistence | L1 | — | ❌ Not started |
-| M13 | Test Suite | L1 | `tests/` | ✅ 229+ tests, ≥75% coverage in CI |
+| M12 | Persistence | L1 | `axiomai/reasoner/kb/persistence.py` | ✅ SQLite + query API |
+| M13 | Test Suite | L1 | `tests/` | ✅ 259+ tests, ≥75% coverage in CI |
 | M14 | Examples | L1 | `examples/` | ✅ 1 script |
 | M15 | Agent Governance Framework | L2 | `axiomai/governance/` | ✅ Complete |
-| M16 | Connector SDK | L2 | — | ❌ Not started |
-| M17 | Web Application | L2 | — | ❌ Not started |
-| M18 | Case Study Packages | L3 | `apps/case-studies/` (planned) | ❌ Specs only |
+| M16 | Connector SDK | L2 | `axiomai/connectors/` | ✅ Complete + REST API |
+| M17 | Web Application | L2 | `apps/console/` | ✅ Streamlit + Docker Compose |
+| M18 | Case Study Packages | L3 | `apps/case_studies/` | ✅ 18/18 verticals |
 
 ---
 
@@ -481,14 +481,19 @@ ALLOW | DENY | ESCALATE + proof trace
 Audit log entry
 ```
 
-**Planned package:** `axiomai/governance/`
+**Package:** `axiomai/governance/`
 
 | Submodule | Responsibility |
 |-----------|----------------|
-| `middleware.py` | Hook into agent action pipeline |
+| `middleware.py` | `AgentGovernanceMiddleware` — pre-action agent hook |
+| `registry.py` | `PolicyRegistry` — load policy packs by ID |
 | `policy.py` | Policy rule packs, versioning |
 | `audit.py` | Immutable decision log |
 | `escalation.py` | Human-in-the-loop routing |
+
+**Policy packs:** refund, procurement, data-access, cloud-cost
+
+**API:** `GET /policies`, `POST /governance/validate` (with `policy_id`), persistent audit via `AXIOMAI_AUDIT_PERSIST`
 
 ---
 

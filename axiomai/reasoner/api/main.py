@@ -14,6 +14,7 @@ from ..engine import Reasoner
 from ..engines.constraints import ConstraintSolver, solve_sudoku
 from ..explain.narrator import Narrator
 from .routes_app import router as app_router
+from .routes_connectors import router as connectors_router
 
 app = FastAPI(
     title="AxiomAI Reasoner",
@@ -21,6 +22,7 @@ app = FastAPI(
     description="Deterministic reasoning engine with governance, case studies, and audit APIs.",
 )
 app.include_router(app_router)
+app.include_router(connectors_router, prefix="/connectors")
 _persist = os.environ.get("AXIOMAI_PERSIST")
 reasoner = Reasoner(persist=_persist) if _persist else Reasoner()
 

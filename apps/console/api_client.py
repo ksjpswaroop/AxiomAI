@@ -69,11 +69,33 @@ class ApiClient:
         action: dict,
         context: list[str],
         case_study: str | None = None,
+        policy_id: str = "refund-policy",
+        nl_context: str | None = None,
     ) -> dict:
-        payload: dict = {"action": action, "context": context}
+        payload: dict = {
+            "action": action,
+            "context": context,
+            "policy_id": policy_id,
+        }
         if case_study:
             payload["case_study"] = case_study
+        if nl_context:
+            payload["nl_context"] = nl_context
         r = httpx.post(self._url("/governance/validate"), json=payload, timeout=60.0)
+        r.raise_for_status()
+        return r.json()
+
+    def list_policies(self) -> list[dict]:
+        r = httpx.get(self._url("/policies"), timeout=30.0)
+        r.raise_for_status()
+        return r.json()["policies"]
+
+    def extract(self, text: str, load: bool = True) -> dict:
+        r = httpx.post(
+            self._url("/extract"),
+            json={"text": text, "load": load},
+            timeout=60.0,
+        )
         r.raise_for_status()
         return r.json()
 

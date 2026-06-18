@@ -103,6 +103,9 @@ solve_sudoku(grid)  # 9x9 list of lists
 | GET | `/proofs/{id}` | Fetch a proof by ID |
 | GET | `/inference-runs` | List persisted inference runs |
 | GET | `/inference-runs/{id}` | Fetch an inference run by ID |
+| POST | `/connectors/webhook/facts` | Ingest facts via webhook |
+| GET | `/connectors/webhook/facts` | List buffered webhook facts |
+| POST | `/connectors/file/ingest` | Ingest facts from server file path |
 | POST | `/constraints/solve` | Solve CSP |
 | POST | `/sudoku` | Solve Sudoku |
 | POST | `/planning/plan` | Generate plan |
