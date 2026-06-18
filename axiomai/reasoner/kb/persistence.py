@@ -9,8 +9,15 @@ import uuid
 from typing import Optional
 
 from ..core.models import Fact, Predicate, Rule
-from .schema import FactRow, InferenceRunRow, ProofRow, RuleRow, create_session_factory
-from .store import KnowledgeBase
+from .schema import (
+    ContradictionRow,
+    FactRow,
+    InferenceRunRow,
+    ProofRow,
+    RuleRow,
+    create_session_factory,
+)
+from .store import ContradictionReport, KnowledgeBase
 
 
 class PersistentKnowledgeBase(KnowledgeBase):
@@ -170,3 +177,147 @@ class PersistentKnowledgeBase(KnowledgeBase):
         finally:
             session.close()
         return proof_id
+
+    def list_proofs(
+        self,
+        query: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """Query persisted proof traces."""
+        session = self._Session()
+        try:
+            q = session.query(ProofRow).order_by(ProofRow.created_at.desc())
+            if query:
+                q = q.filter(ProofRow.query == query)
+            rows = q.offset(offset).limit(limit).all()
+            return [self._proof_row_to_dict(row) for row in rows]
+        finally:
+            session.close()
+
+    def get_proof(self, proof_id: str) -> Optional[dict]:
+        """Fetch a single proof by ID."""
+        session = self._Session()
+        try:
+            row = session.get(ProofRow, proof_id)
+            return self._proof_row_to_dict(row) if row else None
+        finally:
+            session.close()
+
+    def list_inference_runs(
+        self,
+        query: Optional[str] = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """Query persisted inference runs."""
+        session = self._Session()
+        try:
+            q = session.query(InferenceRunRow).order_by(
+                InferenceRunRow.created_at.desc()
+            )
+            if query:
+                q = q.filter(InferenceRunRow.query == query)
+            rows = q.offset(offset).limit(limit).all()
+            return [self._inference_run_row_to_dict(row) for row in rows]
+        finally:
+            session.close()
+
+    def get_inference_run(self, run_id: str) -> Optional[dict]:
+        """Fetch a single inference run by ID."""
+        session = self._Session()
+        try:
+            row = session.get(InferenceRunRow, run_id)
+            return self._inference_run_row_to_dict(row) if row else None
+        finally:
+            session.close()
+
+    def record_contradiction(self, report: ContradictionReport) -> str:
+        """Persist a detected contradiction."""
+        contradiction_id = str(uuid.uuid4())
+        session = self._Session()
+        try:
+            row = ContradictionRow(
+                id=contradiction_id,
+                namespace=self.namespace,
+                fact1_predicate=str(report.fact1.predicate),
+                fact2_predicate=str(report.fact2.predicate),
+                explanation=report.explanation,
+                kb_snapshot=self.snapshot(),
+            )
+            session.add(row)
+            session.commit()
+        finally:
+            session.close()
+        return contradiction_id
+
+    def list_contradictions(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """Query persisted contradiction records for this namespace."""
+        session = self._Session()
+        try:
+            rows = (
+                session.query(ContradictionRow)
+                .filter_by(namespace=self.namespace)
+                .order_by(ContradictionRow.created_at.desc())
+                .offset(offset)
+                .limit(limit)
+                .all()
+            )
+            return [self._contradiction_row_to_dict(row) for row in rows]
+        finally:
+            session.close()
+
+    def detect_contradictions(self) -> list[ContradictionReport]:
+        """Detect contradictions and persist new reports."""
+        reports = super().detect_contradictions()
+        existing = {
+            (row["fact1"], row["fact2"])
+            for row in self.list_contradictions(limit=1000)
+        }
+        for report in reports:
+            key = (str(report.fact1.predicate), str(report.fact2.predicate))
+            rev = (key[1], key[0])
+            if key not in existing and rev not in existing:
+                self.record_contradiction(report)
+                existing.add(key)
+        return reports
+
+    @staticmethod
+    def _proof_row_to_dict(row: ProofRow) -> dict:
+        return {
+            "id": row.id,
+            "query": row.query,
+            "result": row.result,
+            "proof_json": row.proof_json,
+            "run_hash": row.run_hash,
+            "created_at": row.created_at.isoformat(),
+        }
+
+    @staticmethod
+    def _inference_run_row_to_dict(row: InferenceRunRow) -> dict:
+        return {
+            "id": row.id,
+            "query": row.query,
+            "mode": row.mode,
+            "result": row.result,
+            "duration_ms": row.duration_ms,
+            "kb_snapshot": row.kb_snapshot,
+            "run_hash": row.run_hash,
+            "created_at": row.created_at.isoformat(),
+        }
+
+    @staticmethod
+    def _contradiction_row_to_dict(row: ContradictionRow) -> dict:
+        return {
+            "id": row.id,
+            "namespace": row.namespace,
+            "fact1": row.fact1_predicate,
+            "fact2": row.fact2_predicate,
+            "explanation": row.explanation,
+            "kb_snapshot": row.kb_snapshot,
+            "created_at": row.created_at.isoformat(),
+        }

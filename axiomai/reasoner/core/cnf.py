@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 
 from ..kb.store import KnowledgeBase
 from .models import Fact, Predicate, Rule
+from .unification import UnificationEngine
 
 
 @dataclass(frozen=True)
@@ -61,9 +62,11 @@ class Clause:
 
 
 def fact_to_clause(fact: Fact) -> Clause:
-    """A ground fact is a unit clause."""
-    lit = Literal.from_string(str(fact.predicate))
-    return Clause([lit])
+    """A ground fact is a unit clause (supports negated facts)."""
+    pred_str = str(fact.predicate)
+    if fact.metadata.get("negated"):
+        return Clause([Literal.from_string(f"¬{pred_str}")])
+    return Clause([Literal.from_string(pred_str)])
 
 
 def rule_to_clauses(rule: Rule) -> list[Clause]:
@@ -101,3 +104,101 @@ def kb_to_clauses(kb: KnowledgeBase) -> list[Clause]:
 def clause_key(clause: Clause) -> str:
     """Deterministic key for clause deduplication."""
     return "|".join(sorted(str(lit) for lit in clause.literals))
+
+
+def dedupe_literals(literals: list[Literal]) -> list[Literal]:
+    """Remove duplicate literals preserving deterministic order."""
+    seen: dict[str, Literal] = {}
+    for lit in literals:
+        seen[str(lit)] = lit
+    return [seen[k] for k in sorted(seen.keys())]
+
+
+def is_tautology(clause: Clause, unification: UnificationEngine) -> bool:
+    """True when clause contains complementary unifiable literals."""
+    for i, lit1 in enumerate(clause.literals):
+        for lit2 in clause.literals[i + 1 :]:
+            if lit1.negated == lit2.negated:
+                continue
+            result = unification.unify(lit1.predicate, lit2.predicate)
+            if result.success:
+                return True
+    return False
+
+
+def simplify_clause(clause: Clause, unification: UnificationEngine) -> Clause | None:
+    """Deduplicate literals and drop tautological clauses."""
+    literals = dedupe_literals(clause.literals)
+    simplified = Clause(literals)
+    if simplified.is_empty():
+        return simplified
+    if is_tautology(simplified, unification):
+        return None
+    return simplified
+
+
+def clause_subsumes(
+    sub: Clause,
+    sup: Clause,
+    unification: UnificationEngine,
+) -> bool:
+    """
+    True if `sub` subsumes `sup` (every literal in sub matches one in sup).
+
+    Ground case: literal set inclusion. First-order: each literal in sub
+    has a complementary-sign match in sup under some substitution.
+    """
+    if sub.is_empty():
+        return not sup.is_empty()
+    if len(sub.literals) > len(sup.literals):
+        return False
+
+    def match_all(subst: dict[str, str], idx: int) -> bool:
+        if idx >= len(sub.literals):
+            return True
+        lit = sub.literals[idx].substitute(subst)
+        for candidate in sup.literals:
+            if lit.negated != candidate.negated:
+                continue
+            result = unification.unify(lit.predicate, candidate.predicate)
+            if not result.success:
+                continue
+            merged = {**subst, **result.substitution.to_dict()}
+            if match_all(merged, idx + 1):
+                return True
+        return False
+
+    return match_all({}, 0)
+
+
+def factor_clause(clause: Clause, unification: UnificationEngine) -> list[Clause]:
+    """Factor a clause on unifiable same-polarity literals."""
+    if len(clause.literals) < 2:
+        return []
+    factors: list[Clause] = []
+    seen: set[str] = set()
+    for i, lit1 in enumerate(clause.literals):
+        for j in range(i + 1, len(clause.literals)):
+            lit2 = clause.literals[j]
+            if lit1.negated != lit2.negated:
+                continue
+            result = unification.unify(lit1.predicate, lit2.predicate)
+            if not result.success:
+                continue
+            subst = result.substitution.to_dict()
+            remaining = [
+                clause.literals[k].substitute(subst)
+                for k in range(len(clause.literals))
+                if k not in (i, j)
+            ]
+            merged_lit = lit1.substitute(subst)
+            factored = simplify_clause(
+                Clause(dedupe_literals([merged_lit, *remaining])),
+                unification,
+            )
+            if factored and not factored.is_empty():
+                key = clause_key(factored)
+                if key not in seen:
+                    seen.add(key)
+                    factors.append(factored)
+    return factors

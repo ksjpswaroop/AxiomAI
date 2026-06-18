@@ -38,13 +38,12 @@ class Parser:
             raise ParserError(f"Invalid predicate '{s}': {e}")
 
     def parse_fact(self, s: str, source: str = "user") -> Fact:
-        """Parse a fact string."""
+        """Parse a fact string (supports negation: ``¬Human(Socrates)``)."""
         s = s.strip()
         if s.startswith("Fact:"):
             s = s[5:].strip()
         try:
-            pred = Predicate.parse(s)
-            return Fact.create(pred, source=source, confidence_source="asserted")
+            return Fact.create(s, source=source, confidence_source="asserted")
         except Exception as e:
             raise ParserError(f"Invalid fact '{s}': {e}")
 

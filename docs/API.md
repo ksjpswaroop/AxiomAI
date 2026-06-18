@@ -95,6 +95,11 @@ solve_sudoku(grid)  # 9x9 list of lists
 | POST | `/forward` | Forward chain |
 | POST | `/resolution` | Resolution proof |
 | GET | `/contradictions` | Check consistency |
+| GET | `/contradictions/history` | List persisted contradiction records |
+| GET | `/proofs` | List persisted proof traces |
+| GET | `/proofs/{id}` | Fetch a proof by ID |
+| GET | `/inference-runs` | List persisted inference runs |
+| GET | `/inference-runs/{id}` | Fetch an inference run by ID |
 | POST | `/constraints/solve` | Solve CSP |
 | POST | `/sudoku` | Solve Sudoku |
 | POST | `/planning/plan` | Generate plan |

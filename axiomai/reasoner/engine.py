@@ -257,6 +257,50 @@ class Reasoner:
         """SHA-256 hash of the last query run (query + KB fingerprint + result)."""
         return self._run_hash
 
+    def list_proofs(
+        self,
+        query: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """List persisted proof traces (requires persistent KB)."""
+        if hasattr(self.kb, "list_proofs"):
+            return self.kb.list_proofs(query=query, limit=limit, offset=offset)
+        return []
+
+    def get_proof(self, proof_id: str) -> dict | None:
+        """Fetch a persisted proof by ID."""
+        if hasattr(self.kb, "get_proof"):
+            return self.kb.get_proof(proof_id)
+        return None
+
+    def list_inference_runs(
+        self,
+        query: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """List persisted inference runs (requires persistent KB)."""
+        if hasattr(self.kb, "list_inference_runs"):
+            return self.kb.list_inference_runs(query=query, limit=limit, offset=offset)
+        return []
+
+    def get_inference_run(self, run_id: str) -> dict | None:
+        """Fetch a persisted inference run by ID."""
+        if hasattr(self.kb, "get_inference_run"):
+            return self.kb.get_inference_run(run_id)
+        return None
+
+    def list_persisted_contradictions(
+        self,
+        limit: int = 50,
+        offset: int = 0,
+    ) -> list[dict]:
+        """List contradiction records from persistent storage."""
+        if hasattr(self.kb, "list_contradictions"):
+            return self.kb.list_contradictions(limit=limit, offset=offset)
+        return []
+
     def derive_all(self) -> ForwardChainResult:
         """Run forward chaining to derive everything possible."""
         return self.forward_engine.run()

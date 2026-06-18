@@ -1,16 +1,31 @@
 """
-Resolution / Theorem Proving via refutation.
+Resolution / Theorem Proving via refutation (full first-order prover).
 """
 
 from __future__ import annotations
 
-import re
 import time
+from dataclasses import dataclass
 
-from ..core.cnf import Clause, Literal, clause_key, kb_to_clauses
+from ..core.cnf import (
+    Clause,
+    Literal,
+    clause_key,
+    clause_subsumes,
+    factor_clause,
+    kb_to_clauses,
+    simplify_clause,
+)
 from ..core.unification import UnificationEngine
 from ..explain.proof import ProofStep, ProofTree, StepType
 from ..kb.store import KnowledgeBase
+
+
+@dataclass
+class _ClauseEntry:
+    clause: Clause
+    key: str
+    source: str = "kb"
 
 
 class ResolutionResult:
@@ -22,13 +37,13 @@ class ResolutionResult:
 
 class ResolutionEngine:
     """
-    Resolution theorem prover using refutation.
+    Full resolution theorem prover using refutation with:
 
-    To prove KB ⊨ Query:
-    1. Convert facts + rules to CNF clauses
-    2. Add ¬Query as a unit clause
-    3. Apply resolution until empty clause (contradiction) or exhaustion
-    4. Fall back to Z3 unsatisfiability check for ground cases
+    - CNF conversion for facts and rules
+    - Set-of-support (SOS) strategy
+    - Tautology removal and subsumption
+    - Clause factorization
+    - Z3 unsatisfiability fallback for ground cases
     """
 
     def __init__(self, kb: KnowledgeBase, unification: UnificationEngine):
@@ -59,41 +74,64 @@ class ResolutionEngine:
             justification="Negation of query for refutation",
         ))
 
-        clauses: list[Clause] = kb_to_clauses(self.kb)
-        clauses.append(Clause([Literal.from_string(neg_query)]))
+        kb_entries = [
+            _ClauseEntry(c, clause_key(c), "kb")
+            for c in kb_to_clauses(self.kb)
+        ]
+        sos = [_ClauseEntry(Clause([Literal.from_string(neg_query)]), clause_key(
+            Clause([Literal.from_string(neg_query)])
+        ), "goal")]
 
-        known: set[str] = {clause_key(c) for c in clauses}
+        all_entries: dict[str, _ClauseEntry] = {e.key: e for e in kb_entries}
+        for e in sos:
+            all_entries[e.key] = e
+
         step_num = 2
-        max_steps = 2000
+        max_steps = 5000
 
         for _ in range(max_steps):
-            new_clauses: list[Clause] = []
+            if not sos:
+                break
+
+            selected = sos.pop(0)
+
+            # Factor selected clause
+            for factored in factor_clause(selected.clause, self.unification):
+                self._add_clause(
+                    factored, "factor", all_entries, sos, proof, step_num
+                )
+                step_num += 1
+
+            pool = list(all_entries.values())
             found_contradiction = False
 
-            for i, c1 in enumerate(clauses):
-                for c2 in clauses[i + 1:]:
-                    result = self._resolve_pair(c1, c2)
-                    if result is None:
-                        found_contradiction = True
+            for other in pool:
+                if other.key == selected.key:
+                    continue
+                for resolvent in self._resolve_all(selected.clause, other.clause):
+                    if resolvent is None:
                         proof.add_step(ProofStep(
                             step=step_num,
                             type=StepType.CONFLICT,
-                            content=f"Empty clause from {c1} and {c2}",
-                            justification="Contradiction derived",
+                            content="□",
+                            justification=(
+                                f"Empty clause from {selected.clause} ⊗ {other.clause}"
+                            ),
                         ))
+                        found_contradiction = True
                         break
-                    if result is not False:
-                        key = clause_key(result)
-                        if key not in known:
-                            known.add(key)
-                            new_clauses.append(result)
-                            proof.add_step(ProofStep(
-                                step=step_num,
-                                type=StepType.RESOLVE,
-                                content=", ".join(str(lit) for lit in result.literals),
-                                justification=f"Resolved {c1} with {c2}",
-                            ))
-                            step_num += 1
+
+                    added = self._add_clause(
+                        resolvent,
+                        f"resolve({selected.source},{other.source})",
+                        all_entries,
+                        sos,
+                        proof,
+                        step_num,
+                    )
+                    if added:
+                        step_num += 1
+
                 if found_contradiction:
                     break
 
@@ -103,10 +141,6 @@ class ResolutionEngine:
                 return ResolutionResult(
                     True, proof, (time.perf_counter() - start) * 1000
                 )
-
-            if not new_clauses:
-                break
-            clauses.extend(new_clauses)
 
         if self._z3_prove(query_str):
             proof.add_step(ProofStep(
@@ -125,17 +159,51 @@ class ResolutionEngine:
             False, proof, (time.perf_counter() - start) * 1000
         )
 
-    def _resolve_pair(
-        self, c1: Clause, c2: Clause
-    ) -> Clause | None | bool:
-        """
-        Resolve two clauses on complementary unifiable literals.
+    def _add_clause(
+        self,
+        clause: Clause,
+        source: str,
+        all_entries: dict[str, _ClauseEntry],
+        sos: list[_ClauseEntry],
+        proof: ProofTree,
+        step_num: int,
+    ) -> bool:
+        simplified = simplify_clause(clause, self.unification)
+        if simplified is None:
+            return False
+        key = clause_key(simplified)
 
-        Returns:
-            Clause — new resolvent
-            None — empty clause (contradiction)
-            False — no resolution possible
-        """
+        # Subsumption: skip if subsumed by existing clause
+        for existing in list(all_entries.values()):
+            if clause_subsumes(existing.clause, simplified, self.unification):
+                return False
+
+        # Remove clauses subsumed by the new one
+        for existing_key in list(all_entries.keys()):
+            existing = all_entries[existing_key]
+            if clause_subsumes(simplified, existing.clause, self.unification):
+                all_entries.pop(existing_key, None)
+                sos[:] = [e for e in sos if e.key != existing_key]
+
+        if key in all_entries:
+            return False
+
+        entry = _ClauseEntry(simplified, key, source)
+        all_entries[key] = entry
+        sos.append(entry)
+        proof.add_step(ProofStep(
+            step=step_num,
+            type=StepType.RESOLVE,
+            content=", ".join(str(lit) for lit in simplified.literals) or "□",
+            justification=f"Derived via {source}",
+        ))
+        return True
+
+    def _resolve_all(self, c1: Clause, c2: Clause) -> list[Clause | None]:
+        """Resolve two clauses on all complementary unifiable literal pairs."""
+        results: list[Clause | None] = []
+        seen: set[str] = set()
+
         for lit1 in c1.literals:
             for lit2 in c2.literals:
                 if lit1.negated == lit2.negated:
@@ -151,12 +219,16 @@ class ResolutionEngine:
                 for lit in c2.literals:
                     if lit is not lit2:
                         remaining.append(lit.substitute(subst))
-                unique: dict[str, Literal] = {str(lit): lit for lit in remaining}
+                unique = dedupe_literals_dict(remaining)
                 resolvent = Clause(list(unique.values()))
                 if resolvent.is_empty():
-                    return None
-                return resolvent
-        return False
+                    results.append(None)
+                    continue
+                key = clause_key(resolvent)
+                if key not in seen:
+                    seen.add(key)
+                    results.append(resolvent)
+        return results
 
     def _z3_prove(self, query_str: str) -> bool:
         """Z3 fallback: KB ∪ {¬query} unsatisfiable ⇒ query provable."""
@@ -167,13 +239,17 @@ class ResolutionEngine:
             bool_vars: dict[str, object] = {}
 
             def get_bool(name: str):
-                safe = re.sub(r"[^\w]", "_", name)
+                safe = "".join(c if c.isalnum() else "_" for c in name)
                 if safe not in bool_vars:
                     bool_vars[safe] = Bool(safe)
                 return bool_vars[safe]
 
             for fact in self.kb.list_active_facts():
-                solver.add(get_bool(str(fact.predicate)))
+                pred = str(fact.predicate)
+                if fact.metadata.get("negated"):
+                    solver.add(Not(get_bool(pred)))
+                else:
+                    solver.add(get_bool(pred))
 
             for rule in self.kb.get_enabled_rules():
                 if not rule.consequent or not rule.antecedents:
@@ -181,7 +257,7 @@ class ResolutionEngine:
                 cons = get_bool(str(rule.consequent))
                 if rule.antecedent_operator == "or":
                     for ant in rule.antecedents:
-                        solver.add(Not(get_bool(str(ant))) | cons)
+                        solver.add(Or(Not(get_bool(str(ant))), cons))
                 else:
                     solver.add(
                         Or(*[Not(get_bool(str(a))) for a in rule.antecedents], cons)
@@ -191,3 +267,7 @@ class ResolutionEngine:
             return solver.check() == unsat
         except Exception:
             return False
+
+
+def dedupe_literals_dict(literals: list[Literal]) -> dict[str, Literal]:
+    return {str(lit): lit for lit in literals}

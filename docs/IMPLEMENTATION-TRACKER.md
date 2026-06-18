@@ -83,6 +83,7 @@ Use this document as the single source of truth for build progress. Update check
 | P1-02 | Implement proper `_resolve_pair` (not just direct negation) | [x] | Resolves complementary literals with unification |
 | P1-03 | Integrate Z3 for unsatisfiability check | [x] | `ask("Mortal(Socrates)", mode="resolution")` → PROVED |
 | P1-04 | Add resolution proof steps to proof tree | [x] | Proof shows resolution steps, not empty tree |
+| P1-04b | Full resolution: SOS, subsumption, factorization | [x] | Multi-hop proofs without Z3 fallback |
 
 ### P1b — Parser & Models
 
@@ -139,6 +140,7 @@ Use this document as the single source of truth for build progress. Update check
 | P2-11 | SQLAlchemy models for facts, rules, proofs, runs | [x] | Schema matches PRD §10 |
 | P2-12 | SQLite backend with async (`aiosqlite`) | [x] | KB survives process restart |
 | P2-13 | `Reasoner` option: `Reasoner(persist="sqlite://...")` | [x] | Transparent persistence |
+| P2-13b | Proof/run query API + contradiction audit persistence | [x] | `list_proofs`, `GET /proofs`, `GET /inference-runs` |
 
 ### P2c — Packaging & CI
 
@@ -402,18 +404,16 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 - Explanation narrator (4 styles)
 - `examples/socrates.py` (5 demos)
 - Root `README.md`, `LICENSE`, corrected doc paths
+- Full resolution engine (SOS, subsumption, factorization, Z3 fallback)
+- Persistent storage (SQLite facts/rules/proofs/runs/contradictions + query API)
 
 ### Partially Implemented
 
-- Resolution engine (stub `_resolve_pair`, no full CNF)
-- LLM extractor module (not wired to `Reasoner` facade)
-- KB namespace / versioning / temporal validity
+_None — all core engine and platform items complete._
 
 ### Not Implemented
 
-- Resolution (full)
-- Persistent storage
-- Test suite
+- Test suite (coverage expansion)
 - LLM integration on Reasoner facade
 - Agent governance framework
 - Connectors

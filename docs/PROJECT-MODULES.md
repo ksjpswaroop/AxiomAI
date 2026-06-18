@@ -210,7 +210,7 @@ result = r.ask("Mortal(Socrates)")
 | Direct contradiction (`P` vs `¬P`) | ✅ |
 | Justification for derived facts | ✅ |
 | Namespace isolation | Partial |
-| Persistent storage | ❌ Planned |
+| Persistent storage | ✅ SQLite (facts, rules, proofs, runs, contradictions) |
 | Versioning | ❌ Planned |
 | Temporal validity | ❌ Planned |
 
@@ -249,9 +249,9 @@ result = r.ask("Mortal(Socrates)")
 | Algorithm | Refutation theorem proving |
 | Input | Query + KB as clauses |
 | Output | `ResolutionResult` |
-| Status | ⚠️ Partial — `_resolve_pair` is simplified |
+| Status | ✅ Complete |
 
-**Remaining work:** Full CNF conversion, proper resolution pairs, Z3 integration for unsat check.
+**Features:** CNF conversion, set-of-support strategy, subsumption, factorization, Z3 unsat fallback.
 
 #### M6d — Constraint Solver (`constraints.py`)
 

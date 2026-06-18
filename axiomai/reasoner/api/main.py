@@ -191,6 +191,53 @@ def check_contradictions():
     }
 
 
+@app.get("/proofs", tags=["Persistence"])
+def list_proofs(
+    query: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """List persisted proof traces (requires AXIOMAI_PERSIST)."""
+    proofs = reasoner.list_proofs(query=query, limit=limit, offset=offset)
+    return {"count": len(proofs), "proofs": proofs}
+
+
+@app.get("/proofs/{proof_id}", tags=["Persistence"])
+def get_proof(proof_id: str):
+    """Fetch a single persisted proof by ID."""
+    proof = reasoner.get_proof(proof_id)
+    if not proof:
+        raise HTTPException(status_code=404, detail=f"Proof not found: {proof_id}")
+    return proof
+
+
+@app.get("/inference-runs", tags=["Persistence"])
+def list_inference_runs(
+    query: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
+):
+    """List persisted inference runs (requires AXIOMAI_PERSIST)."""
+    runs = reasoner.list_inference_runs(query=query, limit=limit, offset=offset)
+    return {"count": len(runs), "runs": runs}
+
+
+@app.get("/inference-runs/{run_id}", tags=["Persistence"])
+def get_inference_run(run_id: str):
+    """Fetch a single persisted inference run by ID."""
+    run = reasoner.get_inference_run(run_id)
+    if not run:
+        raise HTTPException(status_code=404, detail=f"Inference run not found: {run_id}")
+    return run
+
+
+@app.get("/contradictions/history", tags=["Persistence"])
+def list_contradiction_history(limit: int = 50, offset: int = 0):
+    """List persisted contradiction audit records."""
+    records = reasoner.list_persisted_contradictions(limit=limit, offset=offset)
+    return {"count": len(records), "contradictions": records}
+
+
 # ── Constraint / Planning Endpoints ─────────────────────────────────────────
 
 @app.post("/constraints/solve", tags=["Constraints"])

@@ -14,8 +14,8 @@ def test_resolve_pair_unifies_complementary_literals():
     engine = ResolutionEngine(kb, UnificationEngine())
     c1 = Clause([Literal.from_string("Human(Socrates)")])
     c2 = Clause([Literal.from_string("¬Human(x)")])
-    result = engine._resolve_pair(c1, c2)
-    assert result is None  # empty resolvent = contradiction
+    results = engine._resolve_all(c1, c2)
+    assert None in results  # empty resolvent = contradiction
 
 
 def test_resolve_pair_produces_nonempty_resolvent():
@@ -29,9 +29,10 @@ def test_resolve_pair_produces_nonempty_resolvent():
         Literal.from_string("¬Human(x)"),
         Literal.from_string("Rational(Socrates)"),
     ])
-    result = engine._resolve_pair(c1, c2)
-    assert result is not None and result is not False
-    lits = {str(lit) for lit in result.literals}
+    results = engine._resolve_all(c1, c2)
+    nonempty = [r for r in results if r is not None]
+    assert len(nonempty) >= 1
+    lits = {str(lit) for lit in nonempty[0].literals}
     assert "Mortal(Socrates)" in lits
     assert "Rational(Socrates)" in lits
 

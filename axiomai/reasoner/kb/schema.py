@@ -60,12 +60,26 @@ class InferenceRunRow(Base):
     __tablename__ = "inference_runs"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
-    query: Mapped[str] = mapped_column(String(512))
+    query: Mapped[str] = mapped_column(String(512), index=True)
     mode: Mapped[str] = mapped_column(String(32))
     result: Mapped[str] = mapped_column(String(32))
     duration_ms: Mapped[float] = mapped_column(Float)
     kb_snapshot: Mapped[str | None] = mapped_column(String(16), nullable=True)
     run_hash: Mapped[str | None] = mapped_column(String(16), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, default=lambda: datetime.now(timezone.utc)
+    )
+
+
+class ContradictionRow(Base):
+    __tablename__ = "contradictions"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    namespace: Mapped[str] = mapped_column(String(64), default="default", index=True)
+    fact1_predicate: Mapped[str] = mapped_column(String(512))
+    fact2_predicate: Mapped[str] = mapped_column(String(512))
+    explanation: Mapped[str] = mapped_column(Text)
+    kb_snapshot: Mapped[str | None] = mapped_column(String(16), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime, default=lambda: datetime.now(timezone.utc)
     )
