@@ -22,9 +22,11 @@ class AuditEntry:
     explanation: str
     violated_rules: list[str]
     proof: dict[str, Any] | None
+    case_study: str | None = None
+    policy_id: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
-        return {
+        data = {
             "id": self.id,
             "timestamp": self.timestamp,
             "outcome": self.outcome,
@@ -33,6 +35,11 @@ class AuditEntry:
             "violated_rules": self.violated_rules,
             "proof": self.proof,
         }
+        if self.case_study:
+            data["case_study"] = self.case_study
+        if self.policy_id:
+            data["policy_id"] = self.policy_id
+        return data
 
 
 class AuditLog:
@@ -45,7 +52,7 @@ class AuditLog:
     def entries(self) -> list[dict[str, Any]]:
         return [e.to_dict() for e in self._entries]
 
-    def record(self, decision: Decision, action: dict[str, Any]) -> dict[str, Any]:
+    def record(self, decision: Decision, action: dict[str, Any], **metadata: Any) -> dict[str, Any]:
         entry = AuditEntry(
             id=str(uuid.uuid4()),
             timestamp=datetime.now(timezone.utc).isoformat(),
@@ -54,6 +61,8 @@ class AuditLog:
             explanation=decision.explanation,
             violated_rules=list(decision.violated_rules),
             proof=decision.proof,
+            case_study=metadata.get("case_study"),
+            policy_id=metadata.get("policy_id"),
         )
         self._entries.append(entry)
         return entry.to_dict()

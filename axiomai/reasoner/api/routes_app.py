@@ -8,22 +8,35 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
 
-from axiomai.governance import GovernanceEngine, PolicyPack
+from axiomai.governance import AgentGovernanceMiddleware, EscalationRouter, PolicyRegistry
 from axiomai.reasoner.api.audit_store import audit_store
 from axiomai.reasoner.api.case_study_service import list_case_studies, run_case_study
 
 router = APIRouter()
 
-POLICY_PATH = (
-    Path(__file__).resolve().parents[2] / "governance" / "policies" / "refund-policy.yaml"
+_policy_registry = PolicyRegistry.default()
+_escalation_router = EscalationRouter(
+    routes={"DENY": "agent-feedback", "ESCALATE": "manager-queue"}
 )
-_governance_engine = GovernanceEngine(PolicyPack.load(POLICY_PATH))
+_governance_middleware = AgentGovernanceMiddleware(
+    registry=_policy_registry,
+    router=_escalation_router,
+    audit=audit_store._log,  # noqa: SLF001 — shared audit log
+)
 
 
 class GovernanceValidateRequest(BaseModel):
     action: dict[str, Any]
     context: list[str] = Field(default_factory=list)
     case_study: Optional[str] = None
+    policy_id: str = "refund-policy"
+    nl_context: Optional[str] = None
+
+
+@router.get("/policies", tags=["Governance"])
+def list_policies():
+    """List available governance policy packs."""
+    return {"policies": _policy_registry.list_policies()}
 
 
 @router.get("/case-studies", tags=["Case Studies"])
@@ -44,6 +57,7 @@ def run_case_study_endpoint(case_study_id: str):
             _decision_from_dict(result["decision"]),
             action=result.get("action", {}),
             case_study=case_study_id,
+            policy_id="refund-policy",
         )
     elif result.get("outcome") in ("DENY", "BLOCKED", "ESCALATE"):
         from axiomai.governance import Decision
@@ -63,20 +77,44 @@ def run_case_study_endpoint(case_study_id: str):
 
 @router.post("/governance/validate", tags=["Governance"])
 def governance_validate(req: GovernanceValidateRequest):
-    """Validate a proposed agent action against governance policy."""
-    decision = _governance_engine.validate(action=req.action, context=req.context)
-    audit_store.record(decision, action=req.action, case_study=req.case_study)
-    return decision.to_dict()
+    """Validate a proposed agent action against a governance policy pack."""
+    try:
+        _policy_registry.get(req.policy_id)
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Unknown policy: {req.policy_id}")
+
+    result = _governance_middleware.intercept(
+        action=req.action,
+        context=req.context,
+        policy_id=req.policy_id,
+        nl_context=req.nl_context,
+    )
+    decision = result["decision"]
+    audit_store.record(
+        _decision_from_dict(decision),
+        action=req.action,
+        case_study=req.case_study,
+        policy_id=req.policy_id,
+    )
+    return {
+        **decision,
+        "escalation_queue": result.get("escalation_queue"),
+        "audit_id": result.get("audit_id"),
+        "policy_id": req.policy_id,
+    }
 
 
 @router.get("/audit", tags=["Audit"])
 def query_audit(
     outcome: Optional[str] = Query(None),
     case_study: Optional[str] = Query(None),
+    policy_id: Optional[str] = Query(None),
     since: Optional[str] = Query(None),
 ):
     """Query the append-only governance audit log."""
-    entries = audit_store.query(outcome=outcome, case_study=case_study, since=since)
+    entries = audit_store.query(
+        outcome=outcome, case_study=case_study, policy_id=policy_id, since=since
+    )
     return {"count": len(entries), "entries": entries}
 
 

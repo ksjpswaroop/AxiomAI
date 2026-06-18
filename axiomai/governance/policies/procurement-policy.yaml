@@ -1,0 +1,19 @@
+name: procurement-policy
+version: "1.0"
+action_type: purchase
+rules:
+  - IF PurchaseAmount(x, a) AND OverThreshold1000(a) THEN RequiresManagerApproval(x)
+  - IF PurchaseAmount(x, a) AND OverThreshold10000(a) THEN RequiresFinanceApproval(x)
+  - IF NewVendor(x, v) THEN RequiresSecurityReview(x)
+  - IF ContractTermMonths(x, m) AND Over12Months(m) THEN RequiresLegalReview(x)
+  - IF GpuResource(x) THEN RequiresCostAnalysis(x)
+  - IF RequiresSecurityReview(x) THEN PurchaseBlocked(x)
+  - IF RequiresFinanceApproval(x) AND RequiresLegalReview(x) THEN PurchaseBlocked(x)
+allow_query: "PurchaseApproved({entity})"
+deny_queries:
+  - "PurchaseBlocked({entity})"
+escalate_queries:
+  - "RequiresFinanceApproval({entity})"
+  - "RequiresLegalReview({entity})"
+  - "RequiresSecurityReview({entity})"
+  - "RequiresManagerApproval({entity})"

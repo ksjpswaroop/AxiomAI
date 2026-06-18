@@ -81,9 +81,9 @@ User / Agent Query ────────────────────�
 | M10 | REST API | L1 | `axiomai/reasoner/api/main.py` | ✅ Done |
 | M11 | CLI | L1 | `axiomai/reasoner/cli.py` | ✅ Done |
 | M12 | Persistence | L1 | — | ❌ Not started |
-| M13 | Test Suite | L1 | `tests/` | ❌ Not started |
+| M13 | Test Suite | L1 | `tests/` | ✅ 229+ tests, ≥75% coverage in CI |
 | M14 | Examples | L1 | `examples/` | ✅ 1 script |
-| M15 | Agent Governance Framework | L2 | — | ❌ Not started |
+| M15 | Agent Governance Framework | L2 | `axiomai/governance/` | ✅ Complete |
 | M16 | Connector SDK | L2 | — | ❌ Not started |
 | M17 | Web Application | L2 | — | ❌ Not started |
 | M18 | Case Study Packages | L3 | `apps/case-studies/` (planned) | ❌ Specs only |
@@ -325,8 +325,8 @@ result = r.ask("Mortal(Socrates)")
 | Ontology suggestion | Rule firing |
 
 **Status:**
-- Z3 adapter: exists, lightly used
-- LLM extractor: module exists, optional `[llm]` extra, **not exposed on `Reasoner`**
+- Z3 adapter: exists, used by constraint solver and resolution fallback
+- LLM extractor: `Reasoner.extract()`, `POST /extract`, CLI `extract`, `LLMClient` protocol
 
 ---
 
@@ -447,9 +447,9 @@ tests/
 └── conftest.py
 ```
 
-**Tools:** pytest, hypothesis, pytest-asyncio
+**Tools:** pytest, hypothesis, pytest-cov (≥75% coverage enforced in CI)
 
----
+**Status:** ✅ Complete — 29 test modules, 229+ tests
 
 ### M14 — Examples
 

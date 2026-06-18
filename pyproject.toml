@@ -39,6 +39,7 @@ dependencies = [
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
     "hypothesis>=6.92.0",
     "ruff>=0.1.0",
     "mypy>=1.8.0",
@@ -68,6 +69,15 @@ include = ["axiomai*"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+
+[tool.coverage.run]
+source = ["axiomai"]
+omit = ["*/tests/*", "*/apps/*"]
+
+[tool.coverage.report]
+fail_under = 75
+show_missing = true
+skip_covered = false
 
 [tool.mypy]
 python_version = "3.11"

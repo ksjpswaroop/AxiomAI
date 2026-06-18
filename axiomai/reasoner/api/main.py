@@ -72,6 +72,11 @@ class SudokuRequest(BaseModel):
     grid: list[list[int]] | None = None
 
 
+class ExtractRequest(BaseModel):
+    text: str
+    load: bool = True
+
+
 # ── Fact Endpoints ───────────────────────────────────────────────────────────
 
 @app.post("/facts", tags=["Facts"])
@@ -144,6 +149,18 @@ def query(req: QueryRequest):
             "detailed": Narrator.detailed(result.proof),
         },
         "proof_json": result.proof.to_json(),
+    }
+
+
+@app.post("/extract", tags=["Reasoning"])
+def extract(req: ExtractRequest):
+    """Extract facts and rules from natural language via LLM (or fallback)."""
+    result = reasoner.extract(req.text, load=req.load)
+    return {
+        "facts": [str(f.predicate) for f in result["facts"]],
+        "rules": [str(r) for r in result["rules"]],
+        "stats": result.get("stats", {}),
+        "loaded": req.load,
     }
 
 

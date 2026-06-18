@@ -75,6 +75,17 @@ def prove(query: str):
 
 
 @app.command()
+def extract(text: str, load: bool = True):
+    """Extract facts and rules from natural language."""
+    result = reasoner.extract(text, load=load)
+    console.print(f"[green]Extracted {len(result['facts'])} facts, {len(result['rules'])} rules[/green]")
+    for f in result["facts"]:
+        console.print(f"  fact: {f.predicate}")
+    for r in result["rules"]:
+        console.print(f"  rule: {r}")
+
+
+@app.command()
 def forward():
     """Run forward chaining and show all derived facts."""
     result = reasoner.derive_all()

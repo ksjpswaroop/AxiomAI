@@ -74,7 +74,13 @@ class Reasoner:
         print(result.explain())
     """
 
-    def __init__(self, namespace: str = "default", persist: str | None = None, llm_client=None):
+    def __init__(
+        self,
+        namespace: str = "default",
+        persist: str | None = None,
+        llm_client=None,
+        llm: str | None = None,
+    ):
         if persist:
             from .kb.persistence import PersistentKnowledgeBase
             self.kb: KnowledgeBase = PersistentKnowledgeBase(url=persist, namespace=namespace)
@@ -87,7 +93,10 @@ class Reasoner:
         self.resolution_engine = ResolutionEngine(self.kb, self.unification)
         self.causal_engine = CausalEngine()
         self.planning_engine = PlanningEngine()
-        self._llm_extractor = LLMExtractor(llm_client)
+        from .integrations.llm_client import create_llm_client
+
+        client = llm_client or create_llm_client(llm)
+        self._llm_extractor = LLMExtractor(client)
         self._narrator = Narrator()
         self._run_hash: str = ""
         self._run_count: int = 0
@@ -240,18 +249,28 @@ class Reasoner:
             return "resolution"
         return "backward"
 
-    def extract(self, text: str) -> dict:
-        """Extract facts and rules from natural language and load into KB."""
-        facts = self._llm_extractor.extract_facts(text)
-        rules = self._llm_extractor.extract_rules(text)
-        for fact in facts:
-            if fact.predicate.namespace == "default":
-                fact.predicate.namespace = self.kb.namespace
-                fact.predicate._str_cache = None
-            self.kb.add_fact(fact)
-        for rule in rules:
-            self.kb.add_rule(rule)
-        return {"facts": facts, "rules": rules}
+    def extract(self, text: str, *, load: bool = True) -> dict:
+        """
+        Extract facts and rules from natural language.
+
+        When ``load=True`` (default), extracted items are added to the KB.
+        """
+        extracted = self._llm_extractor.extract(text)
+        facts = extracted["facts"]
+        rules = extracted["rules"]
+        if load:
+            for fact in facts:
+                if fact.predicate.namespace == "default":
+                    fact.predicate.namespace = self.kb.namespace
+                    fact.predicate._str_cache = None
+                self.kb.add_fact(fact)
+            for rule in rules:
+                self.kb.add_rule(rule)
+        return {"facts": facts, "rules": rules, "stats": self._llm_extractor.stats()}
+
+    def llm_stats(self) -> dict:
+        """Return LLM extraction statistics."""
+        return self._llm_extractor.stats()
 
     def last_run_hash(self) -> str:
         """SHA-256 hash of the last query run (query + KB fingerprint + result)."""

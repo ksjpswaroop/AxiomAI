@@ -106,6 +106,7 @@ Use this document as the single source of truth for build progress. Update check
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
 | P1-11 | Wire `LLMExtractor` into `Reasoner.extract(text)` | [x] | `r.extract("Socrates is human")` adds fact |
+| P1-11b | LLM client protocol + `POST /extract` + CLI `extract` | [x] | `LLMClient`, `MockLLMClient`, env-based factory |
 | P1-12 | Implement smart `ask(mode="auto")` selection | [x] | Picks forward/backward/resolution by query shape |
 | P1-13 | Run hash: SHA-256 of (query + KB fingerprint + result) | [x] | Same run always produces same hash |
 | P1-14 | Remove or wire unused deps (`kanren`, `unification`) | [x] | No dead dependencies in pyproject.toml |
@@ -132,6 +133,8 @@ Use this document as the single source of truth for build progress. Update check
 | P2-08 | `test_determinism.py` — 100 runs, same fingerprint + result | [x] | Zero variance |
 | P2-09 | `test_api.py` — FastAPI TestClient for all endpoints | [x] | All endpoints return 200 |
 | P2-10 | Property tests with hypothesis for unification | [x] | No crashes on random terms |
+| P2-10b | Coverage tooling + ≥75% on `axiomai/` core | [x] | `pytest --cov=axiomai --cov-fail-under=75` in CI |
+| P2-10c | `test_models.py`, `test_llm_extractor.py`, `test_narrator.py` | [x] | Core module unit tests |
 
 ### P2b — Persistence (M12)
 
@@ -167,6 +170,8 @@ Use this document as the single source of truth for build progress. Update check
 | P3-03 | `GovernanceEngine.validate(action, context)` → Decision | [x] | Returns ALLOW/DENY/ESCALATE + proof |
 | P3-04 | `AuditLog` — append-only decision log with proof JSON | [x] | Every decision logged with timestamp |
 | P3-05 | `EscalationRouter` — route DENY/ESCALATE to human queue | [x] | Configurable routing rules |
+| P3-05b | `AgentGovernanceMiddleware` + `PolicyRegistry` + multi-policy packs | [x] | refund, procurement, data-access, cloud-cost |
+| P3-05c | Persistent audit log (`AXIOMAI_AUDIT_PERSIST`) + `/policies` API | [x] | Audit survives restart |
 
 ### P3b — Connector SDK (M16)
 
@@ -406,16 +411,17 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 - Root `README.md`, `LICENSE`, corrected doc paths
 - Full resolution engine (SOS, subsumption, factorization, Z3 fallback)
 - Persistent storage (SQLite facts/rules/proofs/runs/contradictions + query API)
+- Test suite with coverage enforcement (≥75% on core, 229+ tests)
+- LLM integration on Reasoner facade (`LLMClient`, `/extract`, CLI)
+- Agent governance framework (`AgentGovernanceMiddleware`, multi-policy, persistent audit)
 
 ### Partially Implemented
 
-_None — all core engine and platform items complete._
+_None — all tracked platform items complete._
 
 ### Not Implemented
 
-- Test suite (coverage expansion)
-- LLM integration on Reasoner facade
-- Agent governance framework
+- Web UI (Streamlit console exists; full product UI pending)
 - Connectors
 - Web UI
 - All 18 case study applications

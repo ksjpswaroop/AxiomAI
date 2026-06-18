@@ -91,10 +91,13 @@ solve_sudoku(grid)  # 9x9 list of lists
 | DELETE | `/facts` | Retract a fact |
 | POST | `/rules` | Add a rule |
 | GET | `/rules` | List all rules |
+| POST | `/extract` | Extract facts/rules from natural language |
 | POST | `/query` | Ask a query |
 | POST | `/forward` | Forward chain |
 | POST | `/resolution` | Resolution proof |
-| GET | `/contradictions` | Check consistency |
+| GET | `/policies` | List governance policy packs |
+| POST | `/governance/validate` | Validate agent action (supports `policy_id`) |
+| GET | `/audit` | Query governance audit log |
 | GET | `/contradictions/history` | List persisted contradiction records |
 | GET | `/proofs` | List persisted proof traces |
 | GET | `/proofs/{id}` | Fetch a proof by ID |
