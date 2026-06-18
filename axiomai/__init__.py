@@ -1,5 +1,12 @@
 """AxiomAI — Top-level package. Import from here: from axiomai import Reasoner"""
 
+from axiomai.governance import (
+    AuditLog,
+    Decision,
+    EscalationRouter,
+    GovernanceEngine,
+    PolicyPack,
+)
 from axiomai.reasoner.core.models import Entity, Fact, Predicate, Rule
 from axiomai.reasoner.engine import QueryResult, Reasoner
 from axiomai.reasoner.explain.proof import ProofTree
@@ -15,4 +22,9 @@ __all__ = [
     "Entity",
     "ProofTree",
     "KnowledgeBase",
+    "AuditLog",
+    "Decision",
+    "EscalationRouter",
+    "GovernanceEngine",
+    "PolicyPack",
 ]

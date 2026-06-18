@@ -30,16 +30,16 @@ Use this document as the single source of truth for build progress. Update check
 | P0 | Foundation Fixes | 8/8 ✅ | None |
 | P1 | Core Engine Completion | 14/14 ✅ | None |
 | P2 | Platform Layer | 16/16 ✅ | None |
-| P3 | Application Framework | 0/10 | Depends on P2 |
+| P3 | Application Framework | 10/10 ✅ | None |
 | P4 | Tier 1 Case Studies | 0/3 verticals | Depends on P3 |
 | P5 | Working Application | 0/8 | Depends on P4 |
 | P6 | Tier 2–5 Case Studies | 0/15 verticals | Depends on P5 |
 
-**Overall:** P0–P2 complete. 85 tests passing. CI configured. v0.3.0. Next: P3 application framework.
+**Overall:** P0–P3 complete. 105 tests passing. CI configured. v0.3.0. Next: P4 Tier 1 case studies.
 
-**Active branch:** `cursor/p2-platform-layer-ef4a`
+**Active branch:** `cursor/p3-application-framework-ef4a`
 
-**Recommended next:** P3 — agent governance framework and connector SDK
+**Recommended next:** P4 — CS-07 Cybersecurity, CS-02 SOC2, CS-03 Support Governance
 
 ---
 
@@ -160,28 +160,28 @@ Use this document as the single source of truth for build progress. Update check
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P3-01 | Create `axiomai/governance/` package | [ ] | Importable submodule |
-| P3-02 | `PolicyPack` — load rules from YAML/JSON | [ ] | `PolicyPack.load("refund-policy.yaml")` |
-| P3-03 | `GovernanceEngine.validate(action, context)` → Decision | [ ] | Returns ALLOW/DENY/ESCALATE + proof |
-| P3-04 | `AuditLog` — append-only decision log with proof JSON | [ ] | Every decision logged with timestamp |
-| P3-05 | `EscalationRouter` — route DENY/ESCALATE to human queue | [ ] | Configurable routing rules |
+| P3-01 | Create `axiomai/governance/` package | [x] | Importable submodule |
+| P3-02 | `PolicyPack` — load rules from YAML/JSON | [x] | `PolicyPack.load("refund-policy.yaml")` |
+| P3-03 | `GovernanceEngine.validate(action, context)` → Decision | [x] | Returns ALLOW/DENY/ESCALATE + proof |
+| P3-04 | `AuditLog` — append-only decision log with proof JSON | [x] | Every decision logged with timestamp |
+| P3-05 | `EscalationRouter` — route DENY/ESCALATE to human queue | [x] | Configurable routing rules |
 
 ### P3b — Connector SDK (M16)
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P3-06 | `Connector` protocol + base class | [ ] | Documented interface |
-| P3-07 | `FileConnector` — ingest facts from CSV/JSON | [ ] | Used by all demos |
-| P3-08 | `WebhookConnector` — receive facts via HTTP POST | [ ] | Used by API integrations |
-| P3-09 | Mock connectors for Azure AD, AWS, SIEM (synthetic data) | [ ] | Enable offline demos |
+| P3-06 | `Connector` protocol + base class | [x] | Documented interface |
+| P3-07 | `FileConnector` — ingest facts from CSV/JSON | [x] | Used by all demos |
+| P3-08 | `WebhookConnector` — receive facts via HTTP POST | [x] | Used by API integrations |
+| P3-09 | Mock connectors for Azure AD, AWS, SIEM (synthetic data) | [x] | Enable offline demos |
 
 ### P3c — Shared Case Study Utilities
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P3-10 | `apps/case-studies/_base/` — shared demo runner, report formatter | [ ] | All CS packages use same runner |
+| P3-10 | `apps/case-studies/_base/` — shared demo runner, report formatter | [x] | All CS packages use same runner |
 
-**P3 Exit Criteria:** Governance middleware demo blocks a policy-violating agent action with proof.
+**P3 Exit Criteria:** Governance middleware demo blocks a policy-violating agent action with proof. ✅ Met.
 
 ---
 
@@ -327,9 +327,9 @@ M0: P0 complete ✅ ──────────► Project runs (axiomai socr
          │
 M1: P1 + P2 complete ✅ ────► Engine production-ready (tests + CI)
          │
-M2: P3 complete ────────────► Governance framework demo works  ← CURRENT TARGET
+M2: P3 complete ────────────► Governance framework demo works  ✅
          │
-M3: P4 complete ────────────► 3 Tier 1 vertical demos runnable
+M3: P4 complete ────────────► 3 Tier 1 vertical demos runnable  ← CURRENT TARGET
          │
 M4: P5 complete ────────────► Working application (Docker + UI)
          │

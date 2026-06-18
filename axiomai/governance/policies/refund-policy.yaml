@@ -1,0 +1,17 @@
+name: refund-policy
+version: "1.0"
+action_type: refund
+rules:
+  - IF WithinRefundWindow(x) AND UnderLimit(x) AND ProductReturned(x) AND NotFinalSale(x) THEN RefundAllowed(x)
+  - IF AmountMidRange(x) THEN EscalateRefund(x)
+  - IF AlreadyRefunded(x) THEN RefundDenied(x)
+  - IF OutsideRefundWindow(x) THEN PolicyViolation_Window(x)
+  - IF NotProductReturned(x) THEN PolicyViolation_Return(x)
+allow_query: "RefundAllowed({entity})"
+deny_queries:
+  - "RefundDenied({entity})"
+  - "PolicyViolation_Window({entity})"
+  - "PolicyViolation_Return({entity})"
+escalate_queries:
+  - "EscalateRefund({entity})"
+  - "ManagerApprovalRequired({entity})"
