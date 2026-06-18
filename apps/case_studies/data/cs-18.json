@@ -1,0 +1,60 @@
+{
+  "id": "cs-18",
+  "name": "Agentic Trading Guardrail",
+  "module": "CS-18",
+  "slug": "18-agentic-trading",
+  "tier": "5",
+  "runner": "rules",
+  "entity": "trade1",
+  "description": "Position limits and trading halts",
+  "problem": "Autonomous trading agents may exceed risk limits.",
+  "story": "Oversized tech position breaches sector concentration limit.",
+  "data_sources": [
+    {
+      "name": "SEC market risk guidelines",
+      "url": "https://www.sec.gov/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "FINRA rule patterns",
+      "url": "https://www.finra.org/rules-guidance",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF PositionSize(x, p) AND OverPositionLimit(p) THEN TradeBlocked(x)",
+    "IF SectorExposure(x, s) AND OverSectorLimit(s) THEN TradeBlocked(x)",
+    "IF RiskChecksPass(x) THEN TradeApproved(x)"
+  ],
+  "outcome_map": {
+    "DENY": "BLOCKED"
+  },
+  "scenarios": {
+    "default": {
+      "label": "Blocked \u2014 position limit",
+      "facts": [
+        "PositionSize({entity}, 5000000)",
+        "OverPositionLimit(5000000)",
+        "SectorExposure({entity}, 0.45)",
+        "OverSectorLimit(0.45)"
+      ],
+      "deny_queries": [
+        "TradeBlocked({entity})"
+      ],
+      "expected_outcome": "BLOCKED",
+      "explanation": "Trade blocked \u2014 position and sector limits exceeded."
+    },
+    "approved": {
+      "label": "Approved trade",
+      "facts": [
+        "RiskChecksPass({entity})"
+      ],
+      "allow_queries": [
+        "TradeApproved({entity})"
+      ],
+      "expected_outcome": "ALLOW"
+    }
+  }
+}

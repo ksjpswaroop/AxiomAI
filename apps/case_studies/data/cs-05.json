@@ -1,0 +1,61 @@
+{
+  "id": "cs-05",
+  "name": "AI Code Review Guardrail",
+  "module": "CS-05",
+  "slug": "05-ai-code-review",
+  "tier": "5",
+  "runner": "rules",
+  "entity": "deploy1",
+  "description": "Block insecure code patterns before deploy",
+  "problem": "LLM-generated code may include secrets or insecure routes.",
+  "story": "Deploy pipeline detected hardcoded API key and unauthenticated admin route.",
+  "data_sources": [
+    {
+      "name": "OWASP Top 10",
+      "url": "https://owasp.org/www-project-top-ten/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "CWE-798 Hard-coded Credentials",
+      "url": "https://cwe.mitre.org/data/definitions/798.html",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF HardcodedSecret(x) THEN DeployBlocked(x)",
+    "IF UnauthenticatedRoute(x) THEN DeployBlocked(x)",
+    "IF UnapprovedDependency(x) THEN DeployEscalated(x)",
+    "IF AllChecksPass(x) THEN DeployApproved(x)"
+  ],
+  "outcome_map": {
+    "DENY": "BLOCKED",
+    "ESCALATE": "ESCALATE"
+  },
+  "scenarios": {
+    "default": {
+      "label": "Blocked \u2014 secrets + open route",
+      "facts": [
+        "HardcodedSecret({entity})",
+        "UnauthenticatedRoute({entity})"
+      ],
+      "deny_queries": [
+        "DeployBlocked({entity})"
+      ],
+      "expected_outcome": "BLOCKED",
+      "explanation": "Deployment blocked: hardcoded secret and unauthenticated route detected."
+    },
+    "approved": {
+      "label": "Approved \u2014 clean build",
+      "facts": [
+        "AllChecksPass({entity})"
+      ],
+      "allow_queries": [
+        "DeployApproved({entity})"
+      ],
+      "expected_outcome": "ALLOW",
+      "explanation": "All security checks passed."
+    }
+  }
+}

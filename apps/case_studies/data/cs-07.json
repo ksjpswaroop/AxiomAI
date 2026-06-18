@@ -1,0 +1,19 @@
+{
+  "id": "cs-07",
+  "name": "Cybersecurity Root Cause Analysis",
+  "module": "CS-07",
+  "slug": "07-cybersecurity",
+  "tier": "1",
+  "runner": "custom_cyber",
+  "description": "Ransomware attack chain reconstruction",
+  "problem": "SOC analysts spend hours correlating SIEM alerts manually.",
+  "story": "15-fact ransomware incident on Host42 — attack chain confirmed in minutes.",
+  "data_sources": [
+    {"name": "MITRE ATT&CK framework", "url": "https://attack.mitre.org/", "license": "CC BY 4.0"},
+    {"name": "NIST SP 800-61 Incident Handling", "url": "https://csrc.nist.gov/publications/detail/sp/800-61/rev-2/final", "license": "Public domain"},
+    {"name": "Sigma detection rules (patterns)", "url": "https://github.com/SigmaHQ/sigma", "license": "LGPL-2.1"}
+  ],
+  "scenarios": {
+    "default": {"label": "Ransomware on Host42", "scenario_file": "ransomware_incident.json", "expected_outcome": "CONFIRMED", "explanation": "Phishing → credential theft → lateral movement → ransomware deployment."}
+  }
+}

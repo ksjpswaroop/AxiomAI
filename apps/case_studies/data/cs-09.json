@@ -1,0 +1,57 @@
+{
+  "id": "cs-09",
+  "name": "Insurance Claims",
+  "module": "CS-09",
+  "slug": "09-insurance-claims",
+  "tier": "3",
+  "runner": "rules",
+  "entity": "claim1",
+  "description": "Coverage and documentation validation",
+  "problem": "Claims adjusters manually verify coverage and docs.",
+  "story": "Water damage claim with complete documentation within coverage.",
+  "data_sources": [
+    {
+      "name": "ACORD claim forms",
+      "url": "https://www.acord.org/standards-architecture/acord-forms",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "NAIC model laws (demo)",
+      "url": "https://content.naic.org/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF WaterDamage(x) AND PolicyActive(x) AND DocumentationComplete(x) THEN ClaimApproved(x)",
+    "IF FraudFlag(x) THEN ClaimDenied(x)",
+    "IF NotPolicyActive(x) THEN ClaimDenied(x)"
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Approved claim",
+      "facts": [
+        "WaterDamage({entity})",
+        "PolicyActive({entity})",
+        "DocumentationComplete({entity})"
+      ],
+      "allow_queries": [
+        "ClaimApproved({entity})"
+      ],
+      "expected_outcome": "ALLOW"
+    },
+    "denied": {
+      "label": "Denied \u2014 fraud flag",
+      "facts": [
+        "WaterDamage({entity})",
+        "PolicyActive({entity})",
+        "FraudFlag({entity})"
+      ],
+      "deny_queries": [
+        "ClaimDenied({entity})"
+      ],
+      "expected_outcome": "DENY"
+    }
+  }
+}

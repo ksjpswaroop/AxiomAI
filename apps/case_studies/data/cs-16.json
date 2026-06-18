@@ -1,0 +1,56 @@
+{
+  "id": "cs-16",
+  "name": "Immigration Assistant",
+  "module": "CS-16",
+  "slug": "16-immigration",
+  "tier": "4",
+  "runner": "rules",
+  "entity": "petition1",
+  "description": "H-1B filing eligibility checklist",
+  "problem": "Immigration paralegals manually verify H-1B eligibility.",
+  "story": "Beneficiary meets specialty occupation and employer requirements.",
+  "data_sources": [
+    {
+      "name": "USCIS H-1B overview",
+      "url": "https://www.uscis.gov/working-in-the-united-states/h-1b-specialty-occupations",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "DOL LCA requirements",
+      "url": "https://www.dol.gov/agencies/whd/immigration/h1b",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF SpecialtyOccupation(x) AND DegreeRequired(x) AND EmployerSponsored(x) AND LcaFiled(x) THEN H1bEligible(x)",
+    "IF CapExhausted(x) THEN H1bDenied(x)"
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Eligible to file",
+      "facts": [
+        "SpecialtyOccupation({entity})",
+        "DegreeRequired({entity})",
+        "EmployerSponsored({entity})",
+        "LcaFiled({entity})"
+      ],
+      "allow_queries": [
+        "H1bEligible({entity})"
+      ],
+      "expected_outcome": "ALLOW"
+    },
+    "denied": {
+      "label": "Cap exhausted",
+      "facts": [
+        "SpecialtyOccupation({entity})",
+        "CapExhausted({entity})"
+      ],
+      "deny_queries": [
+        "H1bDenied({entity})"
+      ],
+      "expected_outcome": "DENY"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "id": "cs-17",
+  "name": "Sales Qualification",
+  "module": "CS-17",
+  "slug": "17-sales-qualification",
+  "tier": "4",
+  "runner": "rules",
+  "entity": "lead1",
+  "description": "ICP-based lead routing",
+  "problem": "SDRs manually score leads against ICP criteria.",
+  "story": "250-seat security buyer routed to Senior AE per ICP rules.",
+  "data_sources": [
+    {
+      "name": "Open Data Hub B2B patterns",
+      "url": "https://opendatahub.io/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "MEDDIC sales methodology (patterns)",
+      "url": "https://en.wikipedia.org/wiki/MEDDIC",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF EmployeeCount(x, n) AND SeatsAbove200(n) AND SecurityBuyer(x) THEN Route_SeniorAE(x)",
+    "IF EmployeeCount(x, n) AND SeatsBelow50(n) THEN Route_SDR(x)"
+  ],
+  "outcome_map": {
+    "PROVED": "ROUTED"
+  },
+  "scenarios": {
+    "default": {
+      "label": "Route to Senior AE",
+      "facts": [
+        "EmployeeCount({entity}, 250)",
+        "SeatsAbove200(250)",
+        "SecurityBuyer({entity})"
+      ],
+      "goal_queries": [
+        "Route_SeniorAE({entity})"
+      ],
+      "expected_outcome": "ROUTED",
+      "explanation": "Enterprise security buyer \u2014 routed to Senior AE."
+    }
+  }
+}

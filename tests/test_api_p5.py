@@ -159,3 +159,61 @@ def test_openapi_includes_p5_routes():
     assert "/case-studies" in paths
     assert "/governance/validate" in paths
     assert "/audit" in paths
+    assert "/brainstorm" in paths
+
+
+def test_list_case_study_scenarios():
+    r = client.get("/case-studies/cs-07/scenarios")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["case_study_id"] == "cs-07"
+    assert len(body["scenarios"]) >= 1
+    assert any(s["id"] == "default" for s in body["scenarios"])
+
+
+def test_run_case_study_with_scenario():
+    r = client.post("/case-studies/cs-03/run", json={"scenario": "default"})
+    assert r.status_code == 200
+    assert r.json()["case_study_id"] == "cs-03"
+
+
+@pytest.mark.parametrize("case_id", [f"cs-{i:02d}" for i in range(1, 19)])
+def test_run_all_case_studies(case_id):
+    r = client.post(f"/case-studies/{case_id}/run", json={"scenario": "default"})
+    assert r.status_code == 200
+    body = r.json()
+    assert body["case_study_id"] == case_id
+
+
+def test_brainstorm_in_scope():
+    r = client.post(
+        "/brainstorm",
+        json={
+            "description": (
+                "Our support AI keeps issuing refunds outside the return window. "
+                "We need governance with proof and audit trail."
+            )
+        },
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["in_scope"] is True
+    assert "cs-03" in body["matched_case_studies"]
+    assert len(body["how_to_test"]) >= 1
+    assert len(body["how_to_production"]) >= 1
+
+
+def test_brainstorm_out_of_scope():
+    r = client.post(
+        "/brainstorm",
+        json={
+            "description": (
+                "We need a video editing timeline with color grading, "
+                "motion graphics templates, and social media export presets."
+            )
+        },
+    )
+    assert r.status_code == 200
+    body = r.json()
+    assert body["in_scope"] is False
+    assert body["out_of_scope_reason"]

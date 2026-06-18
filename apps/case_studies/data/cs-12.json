@@ -1,0 +1,44 @@
+{
+  "id": "cs-12",
+  "name": "Data Governance",
+  "module": "CS-12",
+  "slug": "12-data-governance",
+  "tier": "2",
+  "runner": "governance",
+  "policy_id": "data-access-policy",
+  "entity": "alex",
+  "action_type": "data_access",
+  "description": "PHI/PII/PCI access control",
+  "problem": "Analysts request access to regulated data without proper role.",
+  "story": "Data analyst denied access to PII/PCI Salesforce dataset.",
+  "data_sources": [
+    {
+      "name": "NIST SP 800-122 PII",
+      "url": "https://csrc.nist.gov/publications/detail/sp/800-122/final",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "PCI DSS access control",
+      "url": "https://www.pcisecuritystandards.org/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Access denied \u2014 wrong role",
+      "facts": [
+        "DataClassification(ar9942, PII)",
+        "AccessDenied_PCI({entity}, ar9942)"
+      ],
+      "action": {
+        "type": "data_access",
+        "entity": "{entity}",
+        "resource": "ar9942"
+      },
+      "expected_outcome": "DENY",
+      "explanation": "Access denied \u2014 role not approved for PII/PCI Salesforce data."
+    }
+  }
+}

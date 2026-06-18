@@ -1,0 +1,59 @@
+{
+  "id": "cs-08",
+  "name": "Contract / SLA Analysis",
+  "module": "CS-08",
+  "slug": "08-contract-analysis",
+  "tier": "3",
+  "runner": "rules",
+  "entity": "contract1",
+  "description": "SLA breach and obligation triggers",
+  "problem": "Manual contract review misses SLA breach triggers.",
+  "story": "Uptime fell to 99.2% vs 99.9% SLA; renewal notice window opens.",
+  "data_sources": [
+    {
+      "name": "ISO 27001 SLA patterns",
+      "url": "https://www.iso.org/standard/54534.html",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "EDGAR contract filing formats",
+      "url": "https://www.sec.gov/edgar",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF SlaBreach(x) THEN ObligationTriggered(x)",
+    "IF UptimeBelowSla(x, u) THEN SlaBreach(x)"
+  ],
+  "scenarios": {
+    "default": {
+      "label": "SLA breach triggered",
+      "facts": [
+        "UptimeBelowSla({entity}, 99.2)",
+        "SlaBreach({entity})"
+      ],
+      "goal_queries": [
+        "ObligationTriggered({entity})"
+      ],
+      "expected_outcome": "OBLIGATION_TRIGGERED",
+      "explanation": "SLA breach detected \u2014 credit obligation triggered."
+    },
+    "renewal": {
+      "label": "Renewal notice required",
+      "facts": [
+        "RenewalWindowOpen({entity})",
+        "ObligationTriggered({entity})"
+      ],
+      "goal_queries": [
+        "ObligationTriggered({entity})"
+      ],
+      "expected_outcome": "OBLIGATION_TRIGGERED",
+      "explanation": "Contract renewal notice window is open."
+    }
+  },
+  "outcome_map": {
+    "PROVED": "OBLIGATION_TRIGGERED"
+  }
+}

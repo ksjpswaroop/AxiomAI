@@ -1,0 +1,53 @@
+{
+  "id": "cs-15",
+  "name": "Education Degree Audit",
+  "module": "CS-15",
+  "slug": "15-education-degree",
+  "tier": "4",
+  "runner": "rules",
+  "entity": "student1",
+  "description": "Enrollment and graduation eligibility",
+  "problem": "Registrar manually audits degree completion requirements.",
+  "story": "Student met credit hours and GPA for graduation eligibility.",
+  "data_sources": [
+    {
+      "name": "EDUCAUSE data standards",
+      "url": "https://www.educause.edu/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "IMS Global Caliper (patterns)",
+      "url": "https://www.imsglobal.org/activity/caliper",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF CreditsEligible(x) AND GpaEligible(x) THEN GraduationEligible(x)"
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Graduation eligible",
+      "facts": [
+        "CreditsEligible({entity})",
+        "GpaEligible({entity})"
+      ],
+      "allow_queries": [
+        "GraduationEligible({entity})"
+      ],
+      "expected_outcome": "ALLOW",
+      "explanation": "Student meets credit and GPA requirements for graduation."
+    },
+    "denied": {
+      "label": "Insufficient credits",
+      "facts": [
+        "GraduationDenied({entity})"
+      ],
+      "deny_queries": [
+        "GraduationDenied({entity})"
+      ],
+      "expected_outcome": "DENY"
+    }
+  }
+}
