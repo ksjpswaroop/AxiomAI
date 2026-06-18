@@ -1,0 +1,57 @@
+{
+  "id": "cs-10",
+  "name": "Banking Loan Eligibility",
+  "module": "CS-10",
+  "slug": "10-banking-loan",
+  "tier": "3",
+  "runner": "rules",
+  "entity": "applicant1",
+  "description": "Underwriting tier and decline rules",
+  "problem": "Loan underwriting requires consistent rule application.",
+  "story": "Prime applicant: 780 FICO, low DTI, stable employment.",
+  "data_sources": [
+    {
+      "name": "FFIEC underwriting guidelines",
+      "url": "https://www.ffiec.gov/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "FRED economic data (patterns)",
+      "url": "https://fred.stlouisfed.org/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF FicoScore(x, s) AND ScoreAbove720(s) AND DtiBelow36(x) AND EmploymentStable(x) THEN LoanApproved_Prime(x)",
+    "IF FicoScore(x, s) AND ScoreBelow620(s) THEN LoanDenied(x)",
+    "IF FraudAlert(x) THEN LoanDenied(x)"
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Prime approval",
+      "facts": [
+        "FicoScore({entity}, 780)",
+        "ScoreAbove720(780)",
+        "DtiBelow36({entity})",
+        "EmploymentStable({entity})"
+      ],
+      "allow_queries": [
+        "LoanApproved_Prime({entity})"
+      ],
+      "expected_outcome": "ALLOW"
+    },
+    "declined": {
+      "label": "Declined \u2014 low FICO",
+      "facts": [
+        "FicoScore({entity}, 580)",
+        "ScoreBelow620(580)"
+      ],
+      "deny_queries": [
+        "LoanDenied({entity})"
+      ],
+      "expected_outcome": "DENY"
+    }
+  }
+}

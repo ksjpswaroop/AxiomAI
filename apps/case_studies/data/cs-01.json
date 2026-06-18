@@ -1,0 +1,63 @@
+{
+  "id": "cs-01",
+  "name": "MSP Network Operations",
+  "module": "CS-01",
+  "slug": "01-msp-network",
+  "tier": "2",
+  "runner": "rules",
+  "entity": "vpn1",
+  "description": "VPN outage root cause \u2014 certificate expiration",
+  "problem": "Client VPN users cannot connect; L1-L3 escalation takes hours.",
+  "story": "Auth failures spiked after internal CA certificate expired on the VPN gateway.",
+  "data_sources": [
+    {
+      "name": "NIST SP 800-52 TLS guidelines",
+      "url": "https://csrc.nist.gov/publications/detail/sp/800-52/rev-2/final",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "OpenSSL x509 expiry patterns",
+      "url": "https://www.openssl.org/docs/manmaster/man1/openssl-x509.html",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF AuthFailureIncreased(x) AND CertificateExpired(x) THEN RootCause_Certificate(x)",
+    "IF VpnServiceRunning(x) AND RootCause_Certificate(x) THEN VpnOutageExplained(x)",
+    "IF DnsFailure(x) AND NotCertificateIssue(x) THEN RootCause_Dns(x)"
+  ],
+  "outcome_map": {
+    "PROVED": "ROOT_CAUSE_FOUND"
+  },
+  "scenarios": {
+    "default": {
+      "label": "Certificate expired",
+      "facts": [
+        "AuthFailureIncreased({entity})",
+        "CertificateExpired({entity})",
+        "VpnServiceRunning({entity})"
+      ],
+      "goal_queries": [
+        "RootCause_Certificate({entity})",
+        "VpnOutageExplained({entity})"
+      ],
+      "expected_outcome": "ROOT_CAUSE_FOUND",
+      "explanation": "VPN certificate expired \u2014 root cause of authentication failures."
+    },
+    "dns_path": {
+      "label": "DNS failure (alternate)",
+      "facts": [
+        "DnsFailure({entity})",
+        "NotCertificateIssue({entity})",
+        "VpnServiceRunning({entity})"
+      ],
+      "goal_queries": [
+        "RootCause_Dns({entity})"
+      ],
+      "expected_outcome": "ROOT_CAUSE_FOUND",
+      "explanation": "DNS misconfiguration caused VPN connectivity loss."
+    }
+  }
+}

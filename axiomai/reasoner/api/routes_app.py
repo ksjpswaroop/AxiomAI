@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from axiomai.governance import AgentGovernanceMiddleware, EscalationRouter, PolicyRegistry
 from axiomai.reasoner.api.audit_store import audit_store
-from axiomai.reasoner.api.case_study_service import list_case_studies, run_case_study
+from axiomai.reasoner.api.case_study_service import list_case_studies, list_scenarios, run_case_study
 
 router = APIRouter()
 
@@ -39,17 +39,35 @@ def list_policies():
     return {"policies": _policy_registry.list_policies()}
 
 
+class CaseStudyRunRequest(BaseModel):
+    scenario: str = "default"
+
+
+class BrainstormRequest(BaseModel):
+    description: str = Field(..., min_length=10)
+
+
 @router.get("/case-studies", tags=["Case Studies"])
 def get_case_studies():
-    """List available Tier 1 case study demos."""
+    """List all 18 case study demos with metadata."""
     return list_case_studies()
 
 
-@router.post("/case-studies/{case_study_id}/run", tags=["Case Studies"])
-def run_case_study_endpoint(case_study_id: str):
-    """Execute a case study demo and return structured results."""
+@router.get("/case-studies/{case_study_id}/scenarios", tags=["Case Studies"])
+def get_case_study_scenarios(case_study_id: str):
+    """List runnable scenarios for a case study."""
     try:
-        result = run_case_study(case_study_id)
+        return {"case_study_id": case_study_id, "scenarios": list_scenarios(case_study_id)}
+    except KeyError:
+        raise HTTPException(status_code=404, detail=f"Unknown case study: {case_study_id}")
+
+
+@router.post("/case-studies/{case_study_id}/run", tags=["Case Studies"])
+def run_case_study_endpoint(case_study_id: str, req: CaseStudyRunRequest | None = None):
+    """Execute a case study demo scenario and return structured results."""
+    scenario = req.scenario if req else "default"
+    try:
+        result = run_case_study(case_study_id, scenario_id=scenario)
     except KeyError:
         raise HTTPException(status_code=404, detail=f"Unknown case study: {case_study_id}")
     if case_study_id == "cs-03" and "decision" in result:
@@ -116,6 +134,14 @@ def query_audit(
         outcome=outcome, case_study=case_study, policy_id=policy_id, since=since
     )
     return {"count": len(entries), "entries": entries}
+
+
+@router.post("/brainstorm", tags=["Brainstorming"])
+def brainstorm(req: BrainstormRequest):
+    """Analyze whether a described problem fits AxiomAI scope."""
+    from apps.case_studies._base.scope_matcher import analyze_problem
+
+    return analyze_problem(req.description).to_dict()
 
 
 @router.delete("/audit", tags=["Audit"])

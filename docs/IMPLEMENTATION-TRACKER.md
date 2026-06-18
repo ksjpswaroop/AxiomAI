@@ -35,9 +35,11 @@ Use this document as the single source of truth for build progress. Update check
 | P5 | Working Application | 12/12 ✅ | None |
 | P6 | Tier 2–5 Case Studies | 15/15 ✅ | None |
 
-**Overall:** P0–P6 complete. 259 tests passing. All 18 case studies runnable. v0.3.0.
+**Overall:** P0–P6 complete. 259 tests passing. 18 investor-ready case studies with scenarios. v0.3.0.
 
-**Active branch:** `cursor/project-modules-tracker-ef4a`
+**Active branch:** `cursor/investor-demo-ui-ef4a`
+
+**Investor demo:** `docker compose up` → http://localhost:8501 — Case Study Gallery (18), Brainstorming, Feature Guides, KB, Governance, Audit
 
 **Recommended next:** Production hardening, PyPI publish, customer pilots
 
@@ -385,6 +387,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 | Date | Phase | Update |
 |------|-------|--------|
+| 2026-06-18 | Investor | 18 case studies with JSON scenarios, investor console, brainstorming, guides |
 | 2026-06-18 | Platform | Full verification — all 9 former "Not Implemented" items complete |
 | 2026-06-18 | P6 | All 15 remaining case studies — 18/18 verticals, 259 tests |
 | 2026-06-17 | P5 | Working app — API extensions, Streamlit console, Docker Compose |

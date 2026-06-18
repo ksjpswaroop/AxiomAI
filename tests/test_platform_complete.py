@@ -170,7 +170,14 @@ def test_web_ui_console_exists():
     root = Path(__file__).resolve().parents[1]
     console = root / "apps" / "console"
     assert (console / "app.py").exists()
-    for page in ("1_Knowledge_Base.py", "2_Case_Studies.py", "3_Governance.py", "4_Audit_Trail.py"):
+    for page in (
+        "1_Case_Study_Gallery.py",
+        "2_Brainstorming.py",
+        "3_Feature_Guides.py",
+        "4_Knowledge_Base.py",
+        "5_Governance.py",
+        "6_Audit_Trail.py",
+    ):
         assert (console / "pages" / page).exists()
 
 

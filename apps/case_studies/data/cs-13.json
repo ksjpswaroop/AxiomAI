@@ -1,0 +1,45 @@
+{
+  "id": "cs-13",
+  "name": "Cloud Cost Governance",
+  "module": "CS-13",
+  "slug": "13-cloud-cost",
+  "tier": "2",
+  "runner": "governance",
+  "policy_id": "cloud-cost-policy",
+  "entity": "req_gpu",
+  "action_type": "cloud_resource",
+  "description": "FinOps resource approval policies",
+  "problem": "Engineering provisions expensive GPU clusters without FinOps review.",
+  "story": "$45K/month GPU in new region with long commitment blocked.",
+  "data_sources": [
+    {
+      "name": "FinOps Foundation framework",
+      "url": "https://www.finops.org/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "AWS pricing API patterns",
+      "url": "https://aws.amazon.com/pricing/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Blocked \u2014 GPU over budget",
+      "facts": [
+        "GpuInstance({entity})",
+        "MonthlyCost({entity}, 45000)",
+        "ResourceBlocked({entity})"
+      ],
+      "action": {
+        "type": "cloud_resource",
+        "entity": "{entity}",
+        "amount": 45000
+      },
+      "expected_outcome": "DENY",
+      "explanation": "GPU cluster blocked \u2014 exceeds budget and requires finance review."
+    }
+  }
+}

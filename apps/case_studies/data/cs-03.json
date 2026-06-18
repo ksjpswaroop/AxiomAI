@@ -1,0 +1,23 @@
+{
+  "id": "cs-03",
+  "name": "AI Customer Support Governance",
+  "module": "CS-03",
+  "slug": "03-ai-support-governance",
+  "tier": "1",
+  "runner": "custom_governance",
+  "policy_id": "refund-policy",
+  "description": "Refund policy enforcement for LLM agents",
+  "problem": "LLM support agents may approve refunds outside policy.",
+  "story": "Agent proposes $350 refund 43 days post-purchase without return — DENIED with proof.",
+  "data_sources": [
+    {"name": "NIST AI RMF Govern function", "url": "https://www.nist.gov/itl/ai-risk-management-framework", "license": "Public domain"},
+    {"name": "FTC refund policy guidance", "url": "https://www.ftc.gov/business-guidance/resources", "license": "Public domain"}
+  ],
+  "scenarios": {
+    "deny_outside_window": {"label": "Deny — outside 30-day window", "expected_outcome": "DENY"},
+    "deny_not_returned": {"label": "Deny — product not returned", "expected_outcome": "DENY"},
+    "allow_compliant": {"label": "Allow — compliant refund", "expected_outcome": "ALLOW"},
+    "escalate_mid_amount": {"label": "Escalate — mid-range amount", "expected_outcome": "ESCALATE"},
+    "deny_already_refunded": {"label": "Deny — duplicate refund", "expected_outcome": "DENY"}
+  }
+}

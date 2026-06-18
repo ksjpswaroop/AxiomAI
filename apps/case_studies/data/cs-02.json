@@ -1,0 +1,19 @@
+{
+  "id": "cs-02",
+  "name": "SOC2 Compliance Automation",
+  "module": "CS-02",
+  "slug": "02-soc2-compliance",
+  "tier": "1",
+  "runner": "custom_soc2",
+  "description": "Automated control gap analysis",
+  "problem": "Manual SOC2 audits take weeks and miss configuration drift.",
+  "story": "Azure AD and AWS Config evidence ingested; 8 controls evaluated automatically.",
+  "data_sources": [
+    {"name": "AICPA SOC2 Trust Services Criteria", "url": "https://www.aicpa.org/resources/landing/system-and-organization-controls-soc-2", "license": "Reference"},
+    {"name": "CIS Azure Foundations Benchmark", "url": "https://www.cisecurity.org/benchmark/azure", "license": "CC BY-NC-SA"},
+    {"name": "CIS AWS Foundations Benchmark", "url": "https://www.cisecurity.org/benchmark/amazon_web_services", "license": "CC BY-NC-SA"}
+  ],
+  "scenarios": {
+    "default": {"label": "Full audit run", "expected_outcome": "AUDIT_COMPLETE", "explanation": "Connector evidence evaluated against 8 SOC2 controls."}
+  }
+}

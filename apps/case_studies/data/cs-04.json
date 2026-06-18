@@ -1,0 +1,63 @@
+{
+  "id": "cs-04",
+  "name": "Healthcare Prior Authorization",
+  "module": "CS-04",
+  "slug": "04-healthcare-prior-auth",
+  "tier": "3",
+  "runner": "rules",
+  "entity": "patient1",
+  "description": "Clinical criteria for prior auth approval",
+  "problem": "Manual prior auth reviews delay patient care.",
+  "story": "Patient completed PT, imaging, and meets high-severity criteria for lumbar procedure.",
+  "data_sources": [
+    {
+      "name": "CMS LCD L33738 (demo pattern)",
+      "url": "https://www.cms.gov/medicare-coverage-database",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "HL7 FHIR Claim resource",
+      "url": "https://www.hl7.org/fhir/claim.html",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF PhysicalTherapyDone(p) AND PainOver6Weeks(p) AND XrayCompleted(p) AND SeverityHigh(p) THEN PriorAuthApproved(p)",
+    "IF EmergencyFlag(p) THEN PriorAuthApproved(p)",
+    "IF SpecialistRequired(p) AND NotSecondOpinion(p) THEN PriorAuthDenied(p)",
+    "IF NotPhysicalTherapyDone(p) THEN PriorAuthDenied(p)"
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Approved \u2014 criteria met",
+      "facts": [
+        "PhysicalTherapyDone({entity})",
+        "PainOver6Weeks({entity})",
+        "XrayCompleted({entity})",
+        "SeverityHigh({entity})"
+      ],
+      "allow_queries": [
+        "PriorAuthApproved({entity})"
+      ],
+      "deny_queries": [
+        "PriorAuthDenied({entity})"
+      ],
+      "expected_outcome": "ALLOW",
+      "explanation": "Clinical criteria satisfied for prior authorization."
+    },
+    "denied": {
+      "label": "Denied \u2014 PT not completed",
+      "facts": [
+        "NotPhysicalTherapyDone({entity})",
+        "PainOver6Weeks({entity})"
+      ],
+      "deny_queries": [
+        "PriorAuthDenied({entity})"
+      ],
+      "expected_outcome": "DENY",
+      "explanation": "Physical therapy prerequisite not met."
+    }
+  }
+}

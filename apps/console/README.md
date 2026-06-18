@@ -1,35 +1,46 @@
-# AxiomAI Console (M17)
+# AxiomAI Investor Console
 
-**UI stack:** Streamlit (MVP) — chosen for P5 speed-to-demo.
-
-Streamlit provides rapid multi-page console development without a separate frontend build step. A React/Next.js console remains an option for P6+ production UI.
+Desktop demo UI for investors and pilots. Minimal design, all features, all 18 case studies.
 
 ## Run locally
 
-Terminal 1 — API:
-
 ```bash
-pip install -e ".[dev,console]"
-axiomai-server
+docker compose up
 ```
 
-Terminal 2 — Console:
+- **Console:** http://localhost:8501
+- **API:** http://localhost:8000/docs
+
+Or without Docker:
 
 ```bash
-AXIOMAI_API_URL=http://localhost:8000 streamlit run apps/console/app.py
+pip install -e ".[console]"
+axiomai-server &   # API on :8000
+streamlit run apps/console/app.py --server.port 8501
 ```
-
-Open http://localhost:8501
 
 ## Pages
 
-| Page | Feature |
+| Page | Purpose |
 |------|---------|
-| Knowledge Base | Add facts/rules, run queries, view proofs |
-| Case Studies | Launch CS-07, CS-02, CS-03 demos |
-| Governance | Simulate agent refund actions |
-| Audit Trail | Browse governance decisions |
+| Home | Platform overview + 5-minute investor path |
+| Case Study Gallery | All 18 verticals with scenario picker |
+| Brainstorming | Describe your problem → scope check + no-code path |
+| Feature Guides | How to use every platform capability |
+| Knowledge Base | Facts, rules, queries, LLM extract |
+| Governance | Policy pack simulator (4 policies) |
+| Audit Trail | Governance decision log |
 
-## Docker
+## Investor demo script (5 min)
 
-See `docs/DEPLOYMENT.md` — `docker compose up` runs API + UI together.
+1. **Home** — show platform metrics
+2. **Case Study Gallery → CS-07** — ransomware RCA, attack chain, MTTR
+3. **Case Study Gallery → CS-03** — try `allow_compliant` and `deny_outside_window` scenarios
+4. **Case Study Gallery → CS-02** — SOC2 gap analysis
+5. **Governance** — procurement policy blocked purchase
+6. **Brainstorming** — paste prospect use case, show scope match
+7. **Knowledge Base** — live query with proof tree
+
+## Data
+
+All case study data is **synthetic**, modeled on open standards (MITRE ATT&CK, SOC2, NIST, OWASP, USCIS, etc.). See `apps/case_studies/data/` and per-guide `docs/guides/case-studies/`.

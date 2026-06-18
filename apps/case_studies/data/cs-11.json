@@ -1,0 +1,53 @@
+{
+  "id": "cs-11",
+  "name": "HR Policy Engine",
+  "module": "CS-11",
+  "slug": "11-hr-policy",
+  "tier": "4",
+  "runner": "rules",
+  "entity": "emp1",
+  "description": "Benefits and leave eligibility",
+  "problem": "HR teams manually check leave policy eligibility.",
+  "story": "Employee eligible for parental leave after tenure and hours requirements met.",
+  "data_sources": [
+    {
+      "name": "DOL FMLA overview",
+      "url": "https://www.dol.gov/agencies/whd/fmla",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "SHRM policy templates",
+      "url": "https://www.shrm.org/",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF TenureEligible(x) AND HoursEligible(x) THEN ParentalLeaveEligible(x)"
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Parental leave eligible",
+      "facts": [
+        "TenureEligible({entity})",
+        "HoursEligible({entity})"
+      ],
+      "allow_queries": [
+        "ParentalLeaveEligible({entity})"
+      ],
+      "expected_outcome": "ALLOW",
+      "explanation": "Employee meets tenure and hours requirements for parental leave."
+    },
+    "denied": {
+      "label": "Denied \u2014 insufficient tenure",
+      "facts": [
+        "LeaveDenied({entity})"
+      ],
+      "deny_queries": [
+        "LeaveDenied({entity})"
+      ],
+      "expected_outcome": "DENY"
+    }
+  }
+}

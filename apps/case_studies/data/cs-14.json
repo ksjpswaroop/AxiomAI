@@ -1,0 +1,47 @@
+{
+  "id": "cs-14",
+  "name": "Manufacturing QC",
+  "module": "CS-14",
+  "slug": "14-manufacturing-qc",
+  "tier": "4",
+  "runner": "rules",
+  "entity": "line3",
+  "description": "Defect root cause diagnosis",
+  "problem": "Quality team manually traces defect patterns on assembly lines.",
+  "story": "Misalignment and elevated scrap rate traced to feeder calibration.",
+  "data_sources": [
+    {
+      "name": "ISO 9001 quality management",
+      "url": "https://www.iso.org/iso-9001-quality-management.html",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "NIST MEP manufacturing patterns",
+      "url": "https://www.nist.gov/mep",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "rules": [
+    "IF MisalignmentDetected(x) AND ScrapRateHigh(x) THEN RootCause_FeederCalibration(x)",
+    "IF TemperatureDrift(x) THEN RootCause_Environment(x)"
+  ],
+  "outcome_map": {
+    "PROVED": "DIAGNOSIS_FOUND"
+  },
+  "scenarios": {
+    "default": {
+      "label": "Feeder calibration root cause",
+      "facts": [
+        "MisalignmentDetected({entity})",
+        "ScrapRateHigh({entity})"
+      ],
+      "goal_queries": [
+        "RootCause_FeederCalibration({entity})"
+      ],
+      "expected_outcome": "DIAGNOSIS_FOUND",
+      "explanation": "Feeder calibration drift caused misalignment and scrap."
+    }
+  }
+}

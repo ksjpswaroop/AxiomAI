@@ -1,0 +1,59 @@
+{
+  "id": "cs-06",
+  "name": "Procurement Agent Governance",
+  "module": "CS-06",
+  "slug": "06-procurement-agent",
+  "tier": "2",
+  "runner": "governance",
+  "policy_id": "procurement-policy",
+  "entity": "req1",
+  "action_type": "purchase",
+  "description": "Block unapproved agent purchases",
+  "problem": "AI procurement agents may commit spend without approvals.",
+  "story": "$45K GPU contract with new vendor triggers finance, legal, and security review.",
+  "data_sources": [
+    {
+      "name": "NIST AI RMF (governance)",
+      "url": "https://www.nist.gov/itl/ai-risk-management-framework",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    },
+    {
+      "name": "Sample procurement thresholds (GSA)",
+      "url": "https://www.gsa.gov/buying-selling",
+      "license": "Public domain / synthetic demo",
+      "note": "Synthetic facts modeled on open patterns; no PII"
+    }
+  ],
+  "scenarios": {
+    "default": {
+      "label": "Blocked \u2014 high spend new vendor",
+      "facts": [
+        "PurchaseAmount({entity}, 45000)",
+        "NewVendor({entity}, NewCloudProvider)",
+        "PurchaseBlocked({entity})"
+      ],
+      "action": {
+        "type": "purchase",
+        "entity": "{entity}",
+        "amount": 45000
+      },
+      "expected_outcome": "DENY",
+      "explanation": "Purchase blocked \u2014 vendor, finance, and legal review required."
+    },
+    "escalate": {
+      "label": "Escalate \u2014 manager approval",
+      "facts": [
+        "PurchaseAmount({entity}, 2500)",
+        "RequiresManagerApproval({entity})"
+      ],
+      "action": {
+        "type": "purchase",
+        "entity": "{entity}",
+        "amount": 2500
+      },
+      "expected_outcome": "ESCALATE",
+      "explanation": "Purchase requires manager approval."
+    }
+  }
+}

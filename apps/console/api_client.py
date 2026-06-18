@@ -1,4 +1,4 @@
-"""HTTP client for the AxiomAI console."""
+"""HTTP client for the AxiomAI investor console."""
 
 from __future__ import annotations
 
@@ -43,11 +43,12 @@ class ApiClient:
         return r.json()
 
     def query(self, query: str, mode: str = "auto") -> dict:
-        r = httpx.post(
-            self._url("/query"),
-            json={"query": query, "mode": mode},
-            timeout=60.0,
-        )
+        r = httpx.post(self._url("/query"), json={"query": query, "mode": mode}, timeout=60.0)
+        r.raise_for_status()
+        return r.json()
+
+    def extract(self, text: str, load: bool = True) -> dict:
+        r = httpx.post(self._url("/extract"), json={"text": text, "load": load}, timeout=60.0)
         r.raise_for_status()
         return r.json()
 
@@ -59,8 +60,17 @@ class ApiClient:
         r.raise_for_status()
         return r.json()
 
-    def run_case_study(self, case_id: str) -> dict:
-        r = httpx.post(self._url(f"/case-studies/{case_id}/run"), timeout=120.0)
+    def list_scenarios(self, case_id: str) -> list[dict]:
+        r = httpx.get(self._url(f"/case-studies/{case_id}/scenarios"), timeout=30.0)
+        r.raise_for_status()
+        return r.json()["scenarios"]
+
+    def run_case_study(self, case_id: str, scenario: str = "default") -> dict:
+        r = httpx.post(
+            self._url(f"/case-studies/{case_id}/run"),
+            json={"scenario": scenario},
+            timeout=120.0,
+        )
         r.raise_for_status()
         return r.json()
 
@@ -72,11 +82,7 @@ class ApiClient:
         policy_id: str = "refund-policy",
         nl_context: str | None = None,
     ) -> dict:
-        payload: dict = {
-            "action": action,
-            "context": context,
-            "policy_id": policy_id,
-        }
+        payload: dict = {"action": action, "context": context, "policy_id": policy_id}
         if case_study:
             payload["case_study"] = case_study
         if nl_context:
@@ -90,12 +96,8 @@ class ApiClient:
         r.raise_for_status()
         return r.json()["policies"]
 
-    def extract(self, text: str, load: bool = True) -> dict:
-        r = httpx.post(
-            self._url("/extract"),
-            json={"text": text, "load": load},
-            timeout=60.0,
-        )
+    def brainstorm(self, description: str) -> dict:
+        r = httpx.post(self._url("/brainstorm"), json={"description": description}, timeout=60.0)
         r.raise_for_status()
         return r.json()
 
