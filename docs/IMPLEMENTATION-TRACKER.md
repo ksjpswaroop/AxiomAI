@@ -31,15 +31,15 @@ Use this document as the single source of truth for build progress. Update check
 | P1 | Core Engine Completion | 14/14 ✅ | None |
 | P2 | Platform Layer | 16/16 ✅ | None |
 | P3 | Application Framework | 10/10 ✅ | None |
-| P4 | Tier 1 Case Studies | 0/3 verticals | Depends on P3 |
+| P4 | Tier 1 Case Studies | 3/3 ✅ | None |
 | P5 | Working Application | 0/8 | Depends on P4 |
 | P6 | Tier 2–5 Case Studies | 0/15 verticals | Depends on P5 |
 
-**Overall:** P0–P3 complete. 105 tests passing. CI configured. v0.3.0. Next: P4 Tier 1 case studies.
+**Overall:** P0–P4 complete. 130 tests passing. CI configured. v0.3.0. Next: P5 working application.
 
-**Active branch:** `cursor/p3-application-framework-ef4a`
+**Active branch:** `cursor/p4-tier1-case-studies-ef4a`
 
-**Recommended next:** P4 — CS-07 Cybersecurity, CS-02 SOC2, CS-03 Support Governance
+**Recommended next:** P5 — web console, API extensions, Docker Compose
 
 ---
 
@@ -194,39 +194,39 @@ Use this document as the single source of truth for build progress. Update check
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| CS07-01 | Create `apps/case-studies/07-cybersecurity/` package | [ ] | Directory structure per PROJECT-MODULES §7 |
-| CS07-02 | Encode MITRE-aligned attack chain rules (10+ rules) | [ ] | Phishing → execution → C2 → lateral → ransomware |
-| CS07-03 | Sample incident scenario JSON (ransomware) | [ ] | 15+ facts from spec |
-| CS07-04 | `demo.py` — ingest facts, run causal + forward, print root cause | [ ] | Identifies initial access vector |
-| CS07-05 | `demo.py` — generate MTTR report (before/after metrics) | [ ] | Matches spec output format |
-| CS07-06 | Mock SIEM connector feeding alert facts | [ ] | Uses M16 connector SDK |
-| CS07-07 | Unit tests for attack chain inference | [ ] | ≥5 scenarios |
-| CS07-08 | README with run instructions | [ ] | `python apps/case-studies/07-cybersecurity/demo.py` |
+| CS07-01 | Create `apps/case-studies/07-cybersecurity/` package | [x] | Directory structure per PROJECT-MODULES §7 |
+| CS07-02 | Encode MITRE-aligned attack chain rules (10+ rules) | [x] | Phishing → execution → C2 → lateral → ransomware |
+| CS07-03 | Sample incident scenario JSON (ransomware) | [x] | 15+ facts from spec |
+| CS07-04 | `demo.py` — ingest facts, run causal + forward, print root cause | [x] | Identifies initial access vector |
+| CS07-05 | `demo.py` — generate MTTR report (before/after metrics) | [x] | Matches spec output format |
+| CS07-06 | Mock SIEM connector feeding alert facts | [x] | Uses M16 connector SDK |
+| CS07-07 | Unit tests for attack chain inference | [x] | ≥5 scenarios |
+| CS07-08 | README with run instructions | [x] | `python apps/case-studies/07-cybersecurity/demo.py` |
 
 ### CS-02 — SOC2 Compliance Automation
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| CS02-01 | Create `apps/case-studies/02-soc2-compliance/` package | [ ] | Directory structure |
-| CS02-02 | Encode SOC2 control rules (MFA, backup, log retention, access review) | [ ] | ≥8 controls from spec |
-| CS02-03 | Mock Azure AD + AWS evidence connectors | [ ] | Synthetic admin/MFA/backup data |
-| CS02-04 | Gap analysis engine — FAIL/PASS per control | [ ] | Produces control gap report |
-| CS02-05 | `demo.py` — full audit cycle simulation | [ ] | Output matches spec format |
-| CS02-06 | Export gap report as JSON + markdown | [ ] | Auditor-ready format |
-| CS02-07 | Unit tests per control | [ ] | Each control has pass/fail test |
+| CS02-01 | Create `apps/case-studies/02-soc2-compliance/` package | [x] | Directory structure |
+| CS02-02 | Encode SOC2 control rules (MFA, backup, log retention, access review) | [x] | ≥8 controls from spec |
+| CS02-03 | Mock Azure AD + AWS evidence connectors | [x] | Synthetic admin/MFA/backup data |
+| CS02-04 | Gap analysis engine — FAIL/PASS per control | [x] | Produces control gap report |
+| CS02-05 | `demo.py` — full audit cycle simulation | [x] | Output matches spec format |
+| CS02-06 | Export gap report as JSON + markdown | [x] | Auditor-ready format |
+| CS02-07 | Unit tests per control | [x] | Each control has pass/fail test |
 
 ### CS-03 — AI Customer Support Governance
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| CS03-01 | Create `apps/case-studies/03-ai-support-governance/` package | [ ] | Directory structure |
-| CS03-02 | Refund policy rules (window, amount, return status) | [ ] | Rules from spec |
-| CS03-03 | `GovernanceEngine` integration for refund decisions | [ ] | Uses M15 middleware |
-| CS03-04 | 5 test scenarios (allow, deny, escalate) | [ ] | All return correct decision + proof |
-| CS03-05 | `demo.py` — simulate LLM refund request → governance check | [ ] | Shows DENIED with violated rules |
-| CS03-06 | Audit log output for each decision | [ ] | Immutable log entries |
+| CS03-01 | Create `apps/case-studies/03-ai-support-governance/` package | [x] | Directory structure |
+| CS03-02 | Refund policy rules (window, amount, return status) | [x] | Rules from spec |
+| CS03-03 | `GovernanceEngine` integration for refund decisions | [x] | Uses M15 middleware |
+| CS03-04 | 5 test scenarios (allow, deny, escalate) | [x] | All return correct decision + proof |
+| CS03-05 | `demo.py` — simulate LLM refund request → governance check | [x] | Shows DENIED with violated rules |
+| CS03-06 | Audit log output for each decision | [x] | Immutable log entries |
 
-**P4 Exit Criteria:** All three demos runnable from CLI; each produces spec-matching output.
+**P4 Exit Criteria:** All three demos runnable from CLI; each produces spec-matching output. ✅ Met.
 
 ---
 
@@ -329,9 +329,9 @@ M1: P1 + P2 complete ✅ ────► Engine production-ready (tests + CI)
          │
 M2: P3 complete ────────────► Governance framework demo works  ✅
          │
-M3: P4 complete ────────────► 3 Tier 1 vertical demos runnable  ← CURRENT TARGET
+M3: P4 complete ────────────► 3 Tier 1 vertical demos runnable  ✅
          │
-M4: P5 complete ────────────► Working application (Docker + UI)
+M4: P5 complete ────────────► Working application (Docker + UI)  ← CURRENT TARGET
          │
 M5: P6 Tier 2 ──────────────► 4 additional verticals
          │
