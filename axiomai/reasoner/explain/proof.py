@@ -21,6 +21,7 @@ class StepType(Enum):
     ASSUME = "assume"
     RETRACT = "retract"
     CONFLICT = "conflict"
+    RESOLVE = "resolve"
 
 
 @dataclass

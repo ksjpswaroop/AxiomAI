@@ -48,12 +48,14 @@ class ForwardChainEngine:
         start = time.perf_counter()
 
         proof = ProofTree()
-        working: dict[str, Fact] = {str(f.predicate): f for f in self.kb.list_facts()}
+        working: dict[str, Fact] = {
+            str(f.predicate): f for f in self.kb.list_active_facts()
+        }
         new_facts_found: list[Fact] = []
         all_derived: list[Fact] = list(working.values())
 
         # Record initial facts
-        for f in self.kb.list_facts():
+        for f in self.kb.list_active_facts():
             self.step_counter += 1
             step = ProofStep(
                 step=self.step_counter,
@@ -108,7 +110,21 @@ class ForwardChainEngine:
         if not rule.consequent:
             return []
 
-        # Try to match all antecedents
+        if rule.antecedent_operator == "or":
+            for ant in rule.antecedents:
+                matched = self._match_antecedent(ant, working, Substitution.identity())
+                if matched is not None:
+                    fact, subst = matched
+                    consequent_pred = rule.consequent.substitute(subst.to_dict())
+                    consequent_fact = Fact.create(
+                        consequent_pred,
+                        source=f"rule:{rule.id}",
+                        confidence_source="derived",
+                    )
+                    return [(consequent_fact, subst)]
+            return []
+
+        # AND antecedents — all must match
         subst = Substitution.identity()
         matched_facts: list[Fact] = []
 

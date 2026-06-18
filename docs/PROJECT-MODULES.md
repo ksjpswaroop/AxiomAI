@@ -74,9 +74,9 @@ User / Agent Query ────────────────────�
 | M3 | Unification & Substitution | L0 | `axiomai/reasoner/core/` | ✅ Done |
 | M4 | Deterministic Ordering | L0 | `axiomai/reasoner/core/ordering.py` | ✅ Done |
 | M5 | Knowledge Base | L0 | `axiomai/reasoner/kb/store.py` | ✅ In-memory only |
-| M6 | Inference Engines | L0 | `axiomai/reasoner/engines/` | ⚠️ Resolution partial |
+| M6 | Inference Engines | L0 | `axiomai/reasoner/engines/` | ✅ Complete |
 | M7 | Explanation Engine | L0 | `axiomai/reasoner/explain/` | ✅ Done |
-| M8 | Integrations (Z3, LLM) | L0 | `axiomai/reasoner/integrations/` | ⚠️ LLM not wired |
+| M8 | Integrations (Z3, LLM) | L0 | `axiomai/reasoner/integrations/` | ✅ Wired via `extract()` |
 | M9 | Reasoner Facade | L0 | `axiomai/reasoner/engine.py` | ✅ Done |
 | M10 | REST API | L1 | `axiomai/reasoner/api/main.py` | ✅ Done |
 | M11 | CLI | L1 | `axiomai/reasoner/cli.py` | ✅ Done |

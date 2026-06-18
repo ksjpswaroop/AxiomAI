@@ -28,18 +28,18 @@ Use this document as the single source of truth for build progress. Update check
 | Phase | Name | Progress | Blocker |
 |-------|------|----------|---------|
 | P0 | Foundation Fixes | 8/8 ✅ | None |
-| P1 | Core Engine Completion | 1/14 | None — ready to start |
-| P2 | Platform Layer | 0/12 | None — can parallelize with P1 |
+| P1 | Core Engine Completion | 14/14 ✅ | None |
+| P2 | Platform Layer | 0/12 | None — next priority |
 | P3 | Application Framework | 0/10 | Depends on P2 |
 | P4 | Tier 1 Case Studies | 0/3 verticals | Depends on P3 |
 | P5 | Working Application | 0/8 | Depends on P4 |
 | P6 | Tier 2–5 Case Studies | 0/15 verticals | Depends on P5 |
 
-**Overall:** P0 complete. Core engine ~90% alpha. Install + CLI verified. Tests/CI not started. Application/case-study code not started.
+**Overall:** P0 + P1 complete. Core engine feature-complete (alpha). 25 tests passing. P2 (CI, persistence) is next.
 
-**Active branch:** `cursor/project-modules-tracker-ef4a` · **PR:** [#4](https://github.com/ksjpswaroop/AxiomAI/pull/4) (docs + P0 fixes, conflicts resolved)
+**Active branch:** `cursor/p1-core-engine-ef4a`
 
-**Recommended next:** P2-01–P2-03 (test suite) in parallel with P1-01–P1-04 (resolution engine)
+**Recommended next:** P2-01–P2-10 (expand test suite + CI)
 
 ---
 
@@ -79,34 +79,34 @@ Use this document as the single source of truth for build progress. Update check
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P1-01 | Implement CNF conversion for facts and rules | [ ] | `Human(Socrates)` + `IF Human(x) THEN Mortal(x)` → clauses |
-| P1-02 | Implement proper `_resolve_pair` (not just direct negation) | [ ] | Resolves complementary literals with unification |
-| P1-03 | Integrate Z3 for unsatisfiability check | [ ] | `ask("Mortal(Socrates)", mode="resolution")` → PROVED |
-| P1-04 | Add resolution proof steps to proof tree | [ ] | Proof shows resolution steps, not empty tree |
+| P1-01 | Implement CNF conversion for facts and rules | [x] | `Human(Socrates)` + `IF Human(x) THEN Mortal(x)` → clauses |
+| P1-02 | Implement proper `_resolve_pair` (not just direct negation) | [x] | Resolves complementary literals with unification |
+| P1-03 | Integrate Z3 for unsatisfiability check | [x] | `ask("Mortal(Socrates)", mode="resolution")` → PROVED |
+| P1-04 | Add resolution proof steps to proof tree | [x] | Proof shows resolution steps, not empty tree |
 
 ### P1b — Parser & Models
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P1-05 | Add disjunction support in rule antecedents (`A OR B`) | [ ] | Parser accepts `IF A OR B THEN C` |
-| P1-06 | Add namespace prefixes (`domain:Predicate(x)`) | [ ] | Facts isolated per namespace |
-| P1-07 | Add temporal validity on facts (`valid_from`, `valid_until`) | [ ] | Expired facts excluded from inference |
+| P1-05 | Add disjunction support in rule antecedents (`A OR B`) | [x] | Parser accepts `IF A OR B THEN C` |
+| P1-06 | Add namespace prefixes (`domain:Predicate(x)`) | [x] | Facts isolated per namespace |
+| P1-07 | Add temporal validity on facts (`valid_from`, `valid_until`) | [x] | Expired facts excluded from inference |
 
 ### P1c — Knowledge Base
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P1-08 | Rule-based contradiction detection | [ ] | Detects derived contradictions, not just direct |
-| P1-09 | Truth maintenance: retraction cascades | [ ] | Retracting a fact invalidates derived facts |
-| P1-10 | KB versioning (snapshot ID per state) | [ ] | `kb.snapshot()` returns immutable ID |
+| P1-08 | Rule-based contradiction detection | [x] | Detects derived contradictions, not just direct |
+| P1-09 | Truth maintenance: retraction cascades | [x] | Retracting a fact invalidates derived facts |
+| P1-10 | KB versioning (snapshot ID per state) | [x] | `kb.snapshot()` returns immutable ID |
 
 ### P1d — Integrations & Facade
 
 | ID | Task | Status | Acceptance Criteria |
 |----|------|--------|---------------------|
-| P1-11 | Wire `LLMExtractor` into `Reasoner.extract(text)` | [ ] | `r.extract("Socrates is human")` adds fact |
-| P1-12 | Implement smart `ask(mode="auto")` selection | [ ] | Picks forward/backward/resolution by query shape |
-| P1-13 | Run hash: SHA-256 of (query + KB fingerprint + result) | [ ] | Same run always produces same hash |
+| P1-11 | Wire `LLMExtractor` into `Reasoner.extract(text)` | [x] | `r.extract("Socrates is human")` adds fact |
+| P1-12 | Implement smart `ask(mode="auto")` selection | [x] | Picks forward/backward/resolution by query shape |
+| P1-13 | Run hash: SHA-256 of (query + KB fingerprint + result) | [x] | Same run always produces same hash |
 | P1-14 | Remove or wire unused deps (`kanren`, `unification`) | [x] | No dead dependencies in pyproject.toml |
 
 **P1 Exit Criteria:** All 6 engines pass integration tests; determinism test confirms identical outputs.
@@ -325,7 +325,7 @@ CS{NN}-06  Register in /case-studies API + web console launcher
 ```
 M0: P0 complete ✅ ──────────► Project runs (axiomai socrates works)
          │
-M1: P1 + P2 complete ───────► Engine production-ready (tests + CI)  ← CURRENT TARGET
+M1: P1 + P2 complete ───────► Engine production-ready (tests + CI)  ← P1 DONE, P2 NEXT
          │
 M2: P3 complete ────────────► Governance framework demo works
          │
@@ -374,7 +374,7 @@ M6: P6 Tier 3–5 ────────────► All 18 case studies im
 
 | Date | Phase | Update |
 |------|-------|--------|
-| 2026-06-17 | P0 | PR #4: merge conflict with master resolved (`IMPLEMENTATION-TRACKER.md`) |
+| 2026-06-17 | P1 | Core engine completion: CNF, resolution, parser, KB, facade (25 tests, TDD) |
 | 2026-06-17 | P0 | Foundation fixes complete: deps, imports, CLI, backward chaining, KB keys |
 | 2026-06-17 | — | PR #3 merged to master: module docs + tracker (docs only) |
 | 2026-06-17 | — | Tracker v1.0 created. Engine ~85% alpha. 18 case study specs exist. |

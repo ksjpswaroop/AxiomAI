@@ -114,10 +114,12 @@ class LLMExtractor:
         rules = []
         import re
         all_match = re.findall(r"all\s+(\w+)\s+are\s+(\w+)", text, re.IGNORECASE)
-        for entity_type, pred_type in all_match:
+        for subject, predicate in all_match:
             try:
+                subject_singular = subject.rstrip("s").capitalize()
+                pred_cap = predicate.capitalize()
                 rule_obj = Rule.parse(
-                    f"IF {pred_type.capitalize()}(x) THEN {entity_type.capitalize()}(x)"
+                    f"IF {subject_singular}(x) THEN {pred_cap}(x)"
                 )
                 rules.append(rule_obj)
             except ParserError:

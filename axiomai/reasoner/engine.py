@@ -73,7 +73,7 @@ class Reasoner:
         print(result.explain())
     """
 
-    def __init__(self, namespace: str = "default"):
+    def __init__(self, namespace: str = "default", llm_client=None):
         self.kb = KnowledgeBase(namespace=namespace)
         self.unification = UnificationEngine()
         self.parser = Parser()
@@ -82,6 +82,7 @@ class Reasoner:
         self.resolution_engine = ResolutionEngine(self.kb, self.unification)
         self.causal_engine = CausalEngine()
         self.planning_engine = PlanningEngine()
+        self._llm_extractor = LLMExtractor(llm_client)
         self._narrator = Narrator()
         self._run_hash: str = ""
         self._run_count: int = 0
@@ -91,6 +92,9 @@ class Reasoner:
     def add_fact(self, predicate: str, source: str = "user", **kwargs) -> Fact:
         """Add a fact to the knowledge base."""
         fact = self.parser.parse_fact(predicate, source=source)
+        if fact.predicate.namespace == "default":
+            fact.predicate.namespace = self.kb.namespace
+            fact.predicate._str_cache = None
         for k, v in kwargs.items():
             setattr(fact, k, v)
         return self.kb.add_fact(fact)
@@ -164,14 +168,12 @@ class Reasoner:
         self._run_count += 1
         start = time.perf_counter()
 
-        # Auto-select mode
         if mode == "auto":
-            # Forward chain if no rules match, backward if they might
-            mode = "backward"
+            mode = self._select_mode(query)
 
         if mode == "backward":
             result = self.backward_engine.prove(query)
-            return QueryResult(
+            qr = QueryResult(
                 query=query,
                 result=result.result,
                 proof=result.proof,
@@ -182,9 +184,8 @@ class Reasoner:
             )
         elif mode == "forward":
             result = self.forward_engine.run()
-            # Check if query is in derived facts
             found = any(str(f.predicate) == query for f in result.all_derived)
-            return QueryResult(
+            qr = QueryResult(
                 query=query,
                 result="PROVED" if found else "DISPROVED",
                 proof=result.proof,
@@ -195,7 +196,7 @@ class Reasoner:
             )
         elif mode == "resolution":
             result = self.resolution_engine.prove(query)
-            return QueryResult(
+            qr = QueryResult(
                 query=query,
                 result="PROVED" if result.provable else "DISPROVED",
                 proof=result.proof,
@@ -206,6 +207,41 @@ class Reasoner:
             )
         else:
             return self.ask(query, mode="backward")
+
+        self._run_hash = hashlib.sha256(
+            f"{query}|{self.fingerprint()}|{qr.result}".encode()
+        ).hexdigest()[:16]
+        return qr
+
+    def _select_mode(self, query: str) -> str:
+        """Pick inference mode based on KB shape and query."""
+        goal = Predicate.parse(query)
+        if self.kb.query_fact(query):
+            return "backward"
+        if self.kb.get_rules_for_consequent(goal):
+            return "backward"
+        if not self.kb.get_enabled_rules():
+            return "forward"
+        if len(self.kb.list_active_facts()) <= 10 and len(self.kb.get_enabled_rules()) <= 5:
+            return "resolution"
+        return "backward"
+
+    def extract(self, text: str) -> dict:
+        """Extract facts and rules from natural language and load into KB."""
+        facts = self._llm_extractor.extract_facts(text)
+        rules = self._llm_extractor.extract_rules(text)
+        for fact in facts:
+            if fact.predicate.namespace == "default":
+                fact.predicate.namespace = self.kb.namespace
+                fact.predicate._str_cache = None
+            self.kb.add_fact(fact)
+        for rule in rules:
+            self.kb.add_rule(rule)
+        return {"facts": facts, "rules": rules}
+
+    def last_run_hash(self) -> str:
+        """SHA-256 hash of the last query run (query + KB fingerprint + result)."""
+        return self._run_hash
 
     def derive_all(self) -> ForwardChainResult:
         """Run forward chaining to derive everything possible."""

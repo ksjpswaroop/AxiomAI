@@ -162,12 +162,23 @@ class BackwardChainEngine:
         if subst is None:
             return False, proof, Substitution.identity()
 
-        # Prove each antecedent recursively
-        for ant in rule.antecedents:
-            ant_inst = ant.substitute(subst.to_dict())
-            result, proof, _ = self._prove_goal(ant_inst, proof, depth + 1)
-            if result != "PROVED":
+        # Prove antecedents recursively
+        if rule.antecedent_operator == "or":
+            any_proved = False
+            for ant in rule.antecedents:
+                ant_inst = ant.substitute(subst.to_dict())
+                result, proof, _ = self._prove_goal(ant_inst, proof, depth + 1)
+                if result == "PROVED":
+                    any_proved = True
+                    break
+            if not any_proved:
                 return False, proof, Substitution.identity()
+        else:
+            for ant in rule.antecedents:
+                ant_inst = ant.substitute(subst.to_dict())
+                result, proof, _ = self._prove_goal(ant_inst, proof, depth + 1)
+                if result != "PROVED":
+                    return False, proof, Substitution.identity()
 
         # All antecedents proved
         self.step_counter += 1

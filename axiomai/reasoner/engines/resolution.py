@@ -4,8 +4,10 @@ Resolution / Theorem Proving via refutation.
 
 from __future__ import annotations
 
+import re
 import time
-from ..core.models import Fact, Rule, Predicate
+
+from ..core.cnf import Clause, Literal, kb_to_clauses, clause_key
 from ..core.unification import UnificationEngine
 from ..explain.proof import ProofTree, ProofStep, StepType
 from ..kb.store import KnowledgeBase
@@ -23,11 +25,10 @@ class ResolutionEngine:
     Resolution theorem prover using refutation.
 
     To prove KB ⊨ Query:
-    1. Add ¬Query to KB
-    2. Convert to CNF
-    3. Apply resolution rules until:
-       - Contradiction found → Query is PROVED
-       - No more resolutions → Query is DISPROVED
+    1. Convert facts + rules to CNF clauses
+    2. Add ¬Query as a unit clause
+    3. Apply resolution until empty clause (contradiction) or exhaustion
+    4. Fall back to Z3 unsatisfiability check for ground cases
     """
 
     def __init__(self, kb: KnowledgeBase, unification: UnificationEngine):
@@ -39,13 +40,17 @@ class ResolutionEngine:
         start = time.perf_counter()
         proof = ProofTree(query=query_str)
 
-        # Check if query is already directly true
         if self.kb.query_fact(query_str):
             proof.result = "PROVED"
             proof.conclusion = query_str
+            proof.add_step(ProofStep(
+                step=1,
+                type=StepType.FACT,
+                content=query_str,
+                justification="Given fact",
+            ))
             return ResolutionResult(True, proof, (time.perf_counter() - start) * 1000)
 
-        # Add negation of query as assumption
         neg_query = f"¬{query_str}"
         proof.add_step(ProofStep(
             step=1,
@@ -54,75 +59,135 @@ class ResolutionEngine:
             justification="Negation of query for refutation",
         ))
 
-        # Resolution loop
-        clauses = self.kb.list_facts()
-        clauses.append(Fact.create(neg_query, source="resolution", confidence_source="assumed"))
+        clauses: list[Clause] = kb_to_clauses(self.kb)
+        clauses.append(Clause([Literal.from_string(neg_query)]))
 
-        resolvents: list[Fact] = []
-        max_steps = 1000
+        known: set[str] = {clause_key(c) for c in clauses}
         step_num = 2
+        max_steps = 2000
 
         for _ in range(max_steps):
-            new_resolvents = self._resolve_clauses(clauses + resolvents, proof, step_num)
-            if new_resolvents is None:
-                # Contradiction found
+            new_clauses: list[Clause] = []
+            found_contradiction = False
+
+            for i, c1 in enumerate(clauses):
+                for c2 in clauses[i + 1:]:
+                    result = self._resolve_pair(c1, c2)
+                    if result is None:
+                        found_contradiction = True
+                        proof.add_step(ProofStep(
+                            step=step_num,
+                            type=StepType.CONFLICT,
+                            content=f"Empty clause from {c1} and {c2}",
+                            justification="Contradiction derived",
+                        ))
+                        break
+                    if result is not False:
+                        key = clause_key(result)
+                        if key not in known:
+                            known.add(key)
+                            new_clauses.append(result)
+                            proof.add_step(ProofStep(
+                                step=step_num,
+                                type=StepType.RESOLVE,
+                                content=", ".join(str(l) for l in result.literals),
+                                justification=f"Resolved {c1} with {c2}",
+                            ))
+                            step_num += 1
+                if found_contradiction:
+                    break
+
+            if found_contradiction:
                 proof.result = "PROVED"
                 proof.conclusion = query_str
                 return ResolutionResult(
                     True, proof, (time.perf_counter() - start) * 1000
                 )
-            if not new_resolvents:
-                break
-            resolvents.extend(new_resolvents)
-            step_num += len(new_resolvents)
 
-        # No contradiction — query is not provable
+            if not new_clauses:
+                break
+            clauses.extend(new_clauses)
+
+        if self._z3_prove(query_str):
+            proof.add_step(ProofStep(
+                step=step_num,
+                type=StepType.RESOLVE,
+                content=query_str,
+                justification="Z3 unsatisfiability check confirmed proof",
+            ))
+            proof.result = "PROVED"
+            proof.conclusion = query_str
+            return ResolutionResult(True, proof, (time.perf_counter() - start) * 1000)
+
         proof.result = "DISPROVED"
         proof.conclusion = f"No resolution proof for: {query_str}"
         return ResolutionResult(
             False, proof, (time.perf_counter() - start) * 1000
         )
 
-    def _resolve_clauses(
-        self,
-        clauses: list[Fact],
-        proof: ProofTree,
-        start_step: int,
-    ) -> list[Fact] | None:
-        """Try to derive contradiction between clauses. Returns None if contradiction found."""
-        new_facts = []
+    def _resolve_pair(
+        self, c1: Clause, c2: Clause
+    ) -> Clause | None | bool:
+        """
+        Resolve two clauses on complementary unifiable literals.
 
-        for i, c1 in enumerate(clauses):
-            for c2 in clauses[i + 1:]:
-                resolvent = self._resolve_pair(c1, c2)
-                if resolvent is None:
-                    # Contradiction!
-                    proof.add_step(ProofStep(
-                        step=start_step,
-                        type=StepType.CONFLICT,
-                        content=f"Contradiction: {c1.predicate} and {c2.predicate}",
-                        justification=f"Resolved {c1.predicate} with {c2.predicate}",
-                    ))
+        Returns:
+            Clause — new resolvent
+            None — empty clause (contradiction)
+            False — no resolution possible
+        """
+        for lit1 in c1.literals:
+            for lit2 in c2.literals:
+                if lit1.negated == lit2.negated:
+                    continue
+                result = self.unification.unify(lit1.predicate, lit2.predicate)
+                if not result.success:
+                    continue
+                subst = result.substitution.to_dict()
+                remaining: list[Literal] = []
+                for lit in c1.literals:
+                    if lit is not lit1:
+                        remaining.append(lit.substitute(subst))
+                for lit in c2.literals:
+                    if lit is not lit2:
+                        remaining.append(lit.substitute(subst))
+                unique: dict[str, Literal] = {str(lit): lit for lit in remaining}
+                resolvent = Clause(list(unique.values()))
+                if resolvent.is_empty():
                     return None
-                if resolvent:
-                    new_facts.append(resolvent)
+                return resolvent
+        return False
 
-        return new_facts
+    def _z3_prove(self, query_str: str) -> bool:
+        """Z3 fallback: KB ∪ {¬query} unsatisfiable ⇒ query provable."""
+        try:
+            from z3 import Solver, Bool, Not, Or, unsat
 
-    def _resolve_pair(self, c1: Fact, c2: Fact) -> Fact | None:
-        """Resolve two clauses. Returns resolvent or None (if contradiction)."""
-        pred1 = c1.predicate
-        pred2 = c2.predicate
+            solver = Solver()
+            bool_vars: dict[str, object] = {}
 
-        # Try to unify predicate with negation of another
-        neg1 = str(pred1).startswith("¬")
-        neg2 = str(pred2).startswith("¬")
+            def get_bool(name: str):
+                safe = re.sub(r"[^\w]", "_", name)
+                if safe not in bool_vars:
+                    bool_vars[safe] = Bool(safe)
+                return bool_vars[safe]
 
-        # Direct contradiction: P and ¬P
-        p1_str = str(pred1).lstrip("¬")
-        p2_str = str(pred2).lstrip("¬")
+            for fact in self.kb.list_active_facts():
+                solver.add(get_bool(str(fact.predicate)))
 
-        if p1_str == p2_str and (neg1 or neg2) and neg1 != neg2:
-            return None  # Contradiction found
+            for rule in self.kb.get_enabled_rules():
+                if not rule.consequent or not rule.antecedents:
+                    continue
+                cons = get_bool(str(rule.consequent))
+                if rule.antecedent_operator == "or":
+                    for ant in rule.antecedents:
+                        solver.add(Not(get_bool(str(ant))) | cons)
+                else:
+                    solver.add(
+                        Or(*[Not(get_bool(str(a))) for a in rule.antecedents], cons)
+                    )
 
-        return None  # No resolution possible in this simplified version
+            solver.add(Not(get_bool(query_str)))
+            return solver.check() == unsat
+        except Exception:
+            return False
