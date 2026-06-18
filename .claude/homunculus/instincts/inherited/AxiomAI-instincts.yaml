@@ -1,0 +1,300 @@
+# Instincts generated from https://github.com/ksjpswaroop/AxiomAI
+# Generated: 2026-06-17T23:24:20.462Z
+# Version: 2.0
+# NOTE: This file supplements (does not replace) any existing curated instincts.
+# High-confidence manually curated instincts should be preserved alongside these.
+
+---
+id: AxiomAI-commit-conventional
+trigger: "when writing a commit message"
+confidence: 0.85
+domain: git
+source: repo-analysis
+source_repo: https://github.com/ksjpswaroop/AxiomAI
+---
+
+# AxiomAI Commit Conventional
+
+## Action
+
+Use conventional commit format with prefixes: fix, docs
+
+## Evidence
+
+- 3 commits analyzed
+- Detected conventional commit pattern
+- Examples: fix(deps): pin unification to installable >=0.3.1, docs: add AGENTS.md with Cursor Cloud setup/run instructions
+
+---
+id: AxiomAI-commit-length
+trigger: "when writing a commit message"
+confidence: 0.6
+domain: git
+source: repo-analysis
+source_repo: https://github.com/ksjpswaroop/AxiomAI
+---
+
+# AxiomAI Commit Length
+
+## Action
+
+Write moderate-length commit messages (~59 characters)
+
+## Evidence
+
+- Average commit message length: 59 chars
+- Based on 3 commits
+
+---
+id: AxiomAI-naming-files
+trigger: "when creating a new file"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/ksjpswaroop/AxiomAI
+---
+
+# AxiomAI Naming Files
+
+## Action
+
+Use camelCase naming convention
+
+## Evidence
+
+- Analyzed file naming patterns in repository
+- Dominant pattern: camelCase
+
+---
+id: AxiomAI-import-relative
+trigger: "when importing modules"
+confidence: 0.75
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/ksjpswaroop/AxiomAI
+---
+
+# AxiomAI Import Relative
+
+## Action
+
+Use relative imports for project files
+
+## Evidence
+
+- Import analysis shows relative import pattern
+- Example: import { x } from '../lib/x'
+
+---
+id: AxiomAI-export-style
+trigger: "when exporting from a module"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: https://github.com/ksjpswaroop/AxiomAI
+---
+
+# AxiomAI Export Style
+
+## Action
+
+Prefer named exports
+
+## Evidence
+
+- Export pattern analysis
+- Dominant style: named
+
+---
+id: AxiomAI-test-separate
+trigger: "when writing tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: https://github.com/ksjpswaroop/AxiomAI
+---
+
+# AxiomAI Test Separate
+
+## Action
+
+Place tests in the tests/ or __tests__/ directory, mirroring src structure
+
+## Evidence
+
+- Separate test directory pattern detected
+- Tests live in dedicated test folders
+
+---
+id: axiomai-instinct-camelcase-functions
+trigger: "When defining a new function"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Camelcase Functions
+
+## Action
+
+Name the function using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.functions: camelCase
+
+---
+id: axiomai-instinct-pascalcase-classes
+trigger: "When defining a new class"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Pascalcase Classes
+
+## Action
+
+Name the class using PascalCase
+
+## Evidence
+
+- Pattern in namingConventions.classes: PascalCase
+
+---
+id: axiomai-instinct-screaming-constants
+trigger: "When declaring a constant"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Screaming Constants
+
+## Action
+
+Name the constant using SCREAMING_SNAKE_CASE
+
+## Evidence
+
+- Pattern in namingConventions.constants: SCREAMING_SNAKE_CASE
+
+---
+id: axiomai-instinct-camelcase-files
+trigger: "When creating a new file"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Camelcase Files
+
+## Action
+
+Name the file using camelCase
+
+## Evidence
+
+- Pattern in namingConventions.files: camelCase
+
+---
+id: axiomai-instinct-relative-imports
+trigger: "When importing modules within the package"
+confidence: 0.8
+domain: code-style
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Relative Imports
+
+## Action
+
+Use relative import statements
+
+## Evidence
+
+- Pattern in importStyle: relative
+
+---
+id: axiomai-instinct-named-exports
+trigger: "When exporting functions or classes"
+confidence: 0.7
+domain: code-style
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Named Exports
+
+## Action
+
+Use named exports
+
+## Evidence
+
+- Pattern in exportStyle: named
+
+---
+id: axiomai-instinct-conventional-commits
+trigger: "When writing a commit message"
+confidence: 0.9
+domain: git
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Conventional Commits
+
+## Action
+
+Use the conventional commit format: <type>(<scope>): <description>
+
+## Evidence
+
+- Seen in commit: fix(deps): pin unification to installable >=0.3.1
+- Seen in commit: docs: add AGENTS.md with Cursor Cloud setup/run instructions
+
+---
+id: axiomai-instinct-commit-prefix-fix-docs
+trigger: "When categorizing a commit"
+confidence: 0.8
+domain: git
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Commit Prefix Fix Docs
+
+## Action
+
+Use 'fix' for bug fixes and 'docs' for documentation changes
+
+## Evidence
+
+- Seen in commit: fix(imports): correct broken module paths so package imports and runs
+- Seen in commit: docs: add AGENTS.md with Cursor Cloud setup/run instructions
+
+---
+id: axiomai-instinct-separate-tests
+trigger: "When adding new tests"
+confidence: 0.8
+domain: testing
+source: repo-analysis
+source_repo: ksjpswaroop/AxiomAI
+---
+
+# Axiomai Instinct Separate Tests
+
+## Action
+
+Place test files in a separate directory from source code
+
+## Evidence
+
+- Pattern in architecture.testLocation: separate
+
