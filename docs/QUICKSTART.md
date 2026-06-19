@@ -59,6 +59,15 @@ AXIOMAI_API_URL=http://localhost:8000 streamlit run apps/console/app.py
 
 Open http://localhost:8501
 
+## 5b. Start the desktop demo (Tauri)
+
+```bash
+cd apps/desktop-tauri/src-tauri
+cargo run
+```
+
+The desktop app opens native UI and calls the same API endpoints used by the web console.
+
 ## 6. Run tests
 
 ```bash

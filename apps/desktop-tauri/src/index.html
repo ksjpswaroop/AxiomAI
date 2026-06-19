@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AxiomAI Desktop Demo</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <header>
+        <h1>AxiomAI Desktop Demo</h1>
+        <p>Connect an agent flow to any system in minutes.</p>
+      </header>
+
+      <section class="card">
+        <h2>Connection</h2>
+        <div class="row">
+          <label for="apiUrl">API URL</label>
+          <input id="apiUrl" value="http://localhost:8000" />
+          <button id="healthBtn">Health check</button>
+        </div>
+        <pre id="healthOut" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>Agent governance demo</h2>
+        <p class="hint">Submit action + context and validate with policy packs.</p>
+        <div class="grid-2">
+          <div>
+            <label for="policyId">Policy</label>
+            <select id="policyId">
+              <option value="refund-policy">refund-policy</option>
+              <option value="procurement-policy">procurement-policy</option>
+              <option value="data-access-policy">data-access-policy</option>
+              <option value="cloud-cost-policy">cloud-cost-policy</option>
+            </select>
+          </div>
+          <div>
+            <label for="caseStudy">Case study (optional)</label>
+            <input id="caseStudy" placeholder="cs-03" />
+          </div>
+        </div>
+        <label for="actionJson">Action JSON</label>
+        <textarea id="actionJson" rows="5">{"type":"refund","customer":"order-1221","amount":350}</textarea>
+        <label for="contextLines">Context facts (one per line)</label>
+        <textarea id="contextLines" rows="5">WithinReturnWindow(order-1221)
+AmountWithinPolicy(order-1221)
+ProductReturned(order-1221)</textarea>
+        <button id="governBtn">Validate action</button>
+        <pre id="governOut" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>System connector demo</h2>
+        <p class="hint">Simulate plugging in any system by posting webhook facts.</p>
+        <label for="webhookFacts">Facts payload (one predicate per line)</label>
+        <textarea id="webhookFacts" rows="4">SystemAlert(DatabaseCPUHigh)
+SystemAlert(UnauthorizedAccessAttempt)</textarea>
+        <button id="webhookBtn">Send webhook facts</button>
+        <pre id="webhookOut" class="output"></pre>
+      </section>
+
+      <section class="card">
+        <h2>Case study demo</h2>
+        <div class="grid-2">
+          <div>
+            <label for="caseStudyId">Case study</label>
+            <select id="caseStudyId">
+              <option value="cs-07">cs-07 (Cybersecurity)</option>
+              <option value="cs-02">cs-02 (SOC2)</option>
+              <option value="cs-03">cs-03 (Support Governance)</option>
+            </select>
+          </div>
+          <div>
+            <label for="scenarioId">Scenario</label>
+            <input id="scenarioId" value="default" />
+          </div>
+        </div>
+        <button id="caseRunBtn">Run case study</button>
+        <pre id="caseOut" class="output"></pre>
+      </section>
+    </main>
+
+    <script src="./main.js"></script>
+  </body>
+</html>

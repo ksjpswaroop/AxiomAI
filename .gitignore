@@ -39,3 +39,6 @@ Thumbs.db
 
 # Case study demo output
 apps/case-studies/*/output/
+
+# Tauri desktop app build output
+apps/desktop-tauri/src-tauri/target/
