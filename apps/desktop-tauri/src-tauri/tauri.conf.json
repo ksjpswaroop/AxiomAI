@@ -1,0 +1,35 @@
+{
+  "$schema": "https://schema.tauri.app/config/1",
+  "package": {
+    "productName": "AxiomAI Desktop Demo",
+    "version": "0.1.0"
+  },
+  "build": {
+    "beforeBuildCommand": "",
+    "beforeDevCommand": "",
+    "devPath": "../src",
+    "distDir": "../src",
+    "withGlobalTauri": true
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "shell": {
+        "open": true
+      }
+    },
+    "windows": [
+      {
+        "title": "AxiomAI Desktop Demo",
+        "width": 1200,
+        "height": 820,
+        "resizable": true
+      }
+    ],
+    "bundle": {
+      "identifier": "dev.axiomai.desktopdemo",
+      "icon": [],
+      "active": false
+    }
+  }
+}
